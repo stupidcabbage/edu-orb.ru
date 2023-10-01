@@ -9,9 +9,13 @@ import pickle
 import json
 # username = "moxofem939@bnovel.com"
 # password = "TESTtest1,"
+from dotenv import load_dotenv
+import os
 
-username = "+79878648206"
-password = "NjvfcItk,b2021"
+load_dotenv()
+
+username = os.getenv("login")
+password = os.getenv("password")
 
 #
 options = webdriver.ChromeOptions()
