@@ -56,7 +56,7 @@ if not cookies:
     for i in a:
         class_attr = i.get_attribute("class") 
         if not class_attr:
-            print(i.find_element(By.XPATH, "//div[@class='subject_name']"))
+            print(i.find_element(By.CLASS_NAME, "col-subject").find_element(By.CLASS_NAME, "subject-name").text)
         else:
             print(i.get_attribute("class"), i.text)
     # for element in diary:
