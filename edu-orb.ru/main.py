@@ -56,7 +56,9 @@ if not cookies:
     for i in a:
         class_attr = i.get_attribute("class") 
         if not class_attr:
-            print(i.find_element(By.CLASS_NAME, "col-subject").find_element(By.CLASS_NAME, "subject-name").text)
+            print("Урок:", i.find_element(By.CLASS_NAME, "col-subject").find_element(By.CLASS_NAME, "subject-name").text)
+            print("Тема урока:", i.find_element(By.CLASS_NAME, "col-topic").text)
+            print("Домашнее задание:", i.find_element(By.CLASS_NAME, "col-homework").text)
         else:
             print(i.get_attribute("class"), i.text)
     # for element in diary:
