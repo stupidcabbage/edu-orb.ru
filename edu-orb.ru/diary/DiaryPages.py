@@ -39,7 +39,6 @@ class SearchDiaryHelper(BasePageEduOrbRu):
     
     def get_schedule(self):
         "Возвращает полное расписание с электронного дневника."
-        diary = self.find_element(EduSearchLocators.LOCATOR_DIARY)
-        for element in diary:
-            pass
-
+        diary = self.find_elements(EduSearchLocators.LOCATOR_DIARY).text
+        pass
+            

@@ -4,9 +4,10 @@ import time
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
+import re
 # username = "moxofem939@bnovel.com"
 # password = "TESTtest1,"
 
@@ -46,9 +47,24 @@ if not cookies:
     # pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
     iframe = driver.find_element(By.CSS_SELECTOR, "#panel-1074-body > iframe")
     driver.switch_to.frame(iframe)
-    diary = driver.find_elements(By.CLASS_NAME, "table.table-condensed.table-hover")
-    for element in diary:
-        print(element.text)
+    # diary = driver.find_element(By.CLASS_NAME, "table.table-condensed.table-hover").text
+    # a = re.split(r"\d\d.\d\d.\sПонедельник|\d\d.\d\d.\sВторник|\d\d.\d\d.\sСреда|\d\d.\d\d.\sЧетверг|\d\d.\d\d.\sПятница|\d\d.\d\d.\sСуббота", diary)
+    # for i in a:
+    #     print(i)
+    diary = driver.find_element(By.CLASS_NAME, "table.table-condensed.table-hover")
+    a = diary.find_elements(By.TAG_NAME, "tr")
+    for i in a:
+        class_attr = i.get_attribute("class") 
+        if not class_attr:
+            print(i.find_element(By.XPATH, "//div[@class='subject_name']"))
+        else:
+            print(i.get_attribute("class"), i.text)
+    # for element in diary:
+        # try:
+        #     print(element.find_element(By.CLASS_NAME, "subject_name").text, ":", element.find_element(By.CLASS_NAME, "col-homework").text)
+        # except Exception:
+        #     print(element.find_element(By.CLASS_NAME, "col-wday").text)
+        # print("\n")
     # days = driver.find_elements(By.CLASS_NAME, "col-wday")
     # subjects = driver.find_elements(By.CLASS_NAME, "subject-name")
     # homeworks = driver.find_elements(By.CLASS_NAME, "col-homework")
