@@ -7,6 +7,22 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
+class EduSearchLocators:
+    "Стандартные искомые элементы электронного дневника."
+    LOCATOR_LOGIN_BUTTON = (By.LINK_TEXT, "Вход через ГИС ЕЛК")
+    "Кнопка авторизации через гос-услуги."
+    LOCATOR_DIARY_BUTTON = (By.ID, 'Дневник учащегося-shortcut')
+    "Кнопка дневника учащегося."
+    LOCATOR_DIARY_IFRAME = (By.CSS_SELECTOR, "#panel-1074-body > iframe")
+    "Фрейм дневника."
+    LOCATOR_DAY = (By.CLASS_NAME, "col-wday")
+    "Колонка дня недели. (DD.MM. WEEKDAY)."
+    LOCATOR_SUBJECT_NAME = (By.CLASS_NAME, "subject-name")
+    "Колонка названия предмета."
+    LOCATOR_HOMEWORK = (By.CLASS_NAME, "col-homework")
+    "Колонка с домашним заданием."
+    LOCATOR_OF_ALL_DIARY_ELEMENTS = (By.TAG_NAME, "tr")
+    "Список всех элементов дневника."
 username = "moxofem939@bnovel.com"
 password = "TESTtest1,"
 

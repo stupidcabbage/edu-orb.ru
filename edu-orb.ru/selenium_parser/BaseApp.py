@@ -5,17 +5,14 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.remote.webelement import WebElement
 
-
-class BasePageEduOrbRu:
-    "Интерфейс работы с вебсайтом электронного дневника Оренбургской области."
+class BasePage:
+    "Общий интерфейс работы с  веб-сайтами."
     def __init__(self, driver: Chrome):
         self.driver = driver
-        self.base_login_url = "https://de.edu.orb.ru/login"
-        self.diary_url = "https://de.edu.orb.ru/#diary"
 
     def find_element(self, locator: Tuple[str, str], time=10) -> WebElement:
         """
-        Нахождение элемента на сайте https://de.edu.orb.ru/
+        Возвращает первый найденный элемент по заданным параметрам."
         :param locator: Искомый элемент.
         :param time int: Максимальное время поиска элемента.
         """
@@ -25,13 +22,34 @@ class BasePageEduOrbRu:
 
     def find_elements(self, locator: Tuple[str, str], time=10) -> list[WebElement]:
         """
-        Нахождение элементов на сайте https://de.edu.orb.ru/
+        Нахождение элементов на сайте.
         :param locator: Искомые элементы.
         :param time int: Максимальное время поиска элементов.
         """
         return WebDriverWait(self.driver, time).until(
                 EC.presence_of_all_elements_located(locator),
                 message=f"Не удалось найти элементы {locator}.")
+
+    def get_cookeis(self):
+        "Возвращает все куки браузера."
+        return self.driver.get_cookies()
+
+
+class BasePageGosUslugi(BasePage):
+    "Интерфейс работы с веб-сайтом авторизации на гос услугах."
+    
+    def send_authenticator_code(
+            self, elements: list[WebElement], authenticator_code: int) -> None:
+        "Вписывает код двухэтапной авторизации в поле ввода."
+        for i, field in enumerate(elements, start=0):
+            field.send_keys(str(authenticator_code)[i])
+
+
+class BasePageEduOrbRu(BasePage):
+    "Интерфейс работы с вебсайтом электронного дневника Оренбургской области."
+    def __init__(self):
+        self.base_login_url = "https://de.edu.orb.ru/login"
+        self.diary_url = "https://de.edu.orb.ru/#diary"
 
     def go_to_login_page(self):
         "Загружает страницу авторизации сайта https://de.edu.orb.ru/."
@@ -40,3 +58,4 @@ class BasePageEduOrbRu:
     def go_to_diary_page(self):
         "Загружает страницу дневника учащегося сайта https://de.edu.orb.ru/."
         return self.driver.get(self.diary_url)
+
