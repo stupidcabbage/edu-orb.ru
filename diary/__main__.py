@@ -10,9 +10,10 @@ def get_parcipiant_id():
     authorize_keys = int(input())
     driver.send_authenticator_code(authorize_keys)
     driver.open_diary()
+    cookie = driver.get_x1_sso_cookie()
+    print(cookie)
     parcipiant_id = driver.get_participant_id()
     print(parcipiant_id)
-    
     
 
 get_parcipiant_id()

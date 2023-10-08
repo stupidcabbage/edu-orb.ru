@@ -11,7 +11,7 @@ load_dotenv()
 class User:
     username: LiteralString
     password: LiteralString
-
+    parcipiant_id: str | None = None
 
 test_user = User(
         username=os.getenv("login"),
