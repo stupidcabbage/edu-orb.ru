@@ -1,0 +1,9 @@
+{% for i in data %}
+{{ i }}<br>
+  {% for lesson in data[i] %}
+    {{ lesson.lessonNumber }}. {{lesson.subject}}:
+    {% if lesson.previousHomework %} {{ lesson.previousHomework.homework }} {% else %} Ничего не задали
+    {% endif %}
+    <br>
+  {% endfor %}
+{% endfor %}

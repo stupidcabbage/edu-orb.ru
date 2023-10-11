@@ -14,7 +14,8 @@ requests = "^2.31.0"
 selenium = "^4.12.0"
 python-dotenv = "^1.0.0"
 aiohttp = "^3.8.5"
-pydantic = "^2.4.2"
+aiogram = "^3.1.1"
+jinja2 = "^3.1.2"
 
 
 [build-system]

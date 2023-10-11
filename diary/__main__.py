@@ -1,10 +1,12 @@
 from diary.selenium_parser.BasePages import SearchHelper
 from diary.services.user import test_user
+import json
 
 
 def write_cookie_to_file(cookies, file: str = "cookies.json"):
     with open(file, "w") as f:
-        f.write(cookies)
+        json.dump(cookies, f)
+
 
 def get_parcipiant_id():
     driver = SearchHelper()

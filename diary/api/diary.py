@@ -1,19 +1,6 @@
-from dataclasses import dataclass
 import json
 import requests
-from pydantic import BaseModel, Field, ConfigDict, field_serializer, validator
-import re
-
-days = {
-    "Понедельник": "monday",
-    "Вторник": "tuesday",
-    "Среда": "wednesday",
-    "Четверг": "thursday",
-    "Пятница": "friday"
-}
-
-day = "09.10."
-
+from pydantic import BaseModel
 
 class PreviosHomewok(BaseModel):
     date: str
@@ -24,7 +11,7 @@ class Lesson(BaseModel):
     subject: str
     teacher: str
     date: str
-    marks: list[int]
+    marksRaw: list[int]
     lessonNumber: int
     lessonTime: str
     homework: str | None
@@ -47,13 +34,20 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0 (Edition Yx GX)"
 }
 
-s = requests.Session()
-with open("cookies.json", "r") as f:
-    cookie = json.load(f)
-for cook in cookie:
-    s.cookies.set(cook['name'], cook['value'])
-r = s.get("https://de.edu.orb.ru/#diary")
-r = s.get("https://de.edu.orb.ru/edv/index/diary/A7A48C5F8B939B82826487956E3FA893?date=09.10.2023", headers=headers).json()
+def get_diary():
+    s = requests.Session()
+    with open("cookies.json", "r") as f:
+        cookie = json.load(f)
+    for cook in cookie:
+        s.cookies.set(cook['name'], cook['value'])
 
-a = Diary.model_validate(r)
+    r = s.get("https://de.edu.orb.ru/#diary")
+    r = s.get("https://de.edu.orb.ru/edv/index/diary/A7A48C5F8B939B82826487956E3FA893?date=11.10.2023",
+              headers=headers).json()
+    a = Diary.model_validate(r)
+    return a.data.diary
 
+# for day, lesson in get_diary().diary.items():
+#     print("на", day)
+#     for i in lesson:
+#         print(f"{i.lessonNumber}. {i.subject}: {i.previousHomework.homework if i.previousHomework else i.homework}")
