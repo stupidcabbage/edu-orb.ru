@@ -17,3 +17,5 @@ test_user = User(
         username=os.getenv("login"),
         password=os.getenv("password")
         )
+
+print(test_user)

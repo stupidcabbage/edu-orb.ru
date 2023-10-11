@@ -28,15 +28,16 @@ headers = {
 }
 
 s = requests.Session()
-with open("cookies.json", "r") as f:
-    cookie = json.load(f)
-for cook in cookie:
-    s.cookies.set(cook['name'], cook['value'])
-r = s.get("https://de.edu.orb.ru/#diary")
-r = s.get("https://de.edu.orb.ru/edv/index/diary/A7A48C5F8B939B82826487956E3FA893?date=09.10.2023", headers=headers)
-print(r.text)
+# with open("cookies.json", "r") as f:
+#     cookie = json.load(f)
+# for cook in cookie:
+#     s.cookies.set(cook['name'], cook['value'])
+# r = s.get("https://de.edu.orb.ru/#diary")
+# r = s.get("https://de.edu.orb.ru/edv/index/diary/A7A48C5F8B939B82826487956E3FA893?date=09.10.2023", headers=headers)
+# print(r.text)
 # with open("some.txt", "w") as f:
 #     f.write(r.text)
+cookie = False
 if not cookie:
     driver.get(url)
     driver.find_element(By.LINK_TEXT, "Вход через ГИС ЕЛК").click()

@@ -1,7 +1,7 @@
 from diary.selenium_parser.BaseApp import BasePage
 from selenium.webdriver.common.by import By
 from diary.services.user import User
-
+import time
 
 class X1_SSO_COOKIE_DOESNT_EXISTS(Exception):
     "Исключение, если в cookies отсутвует X1_SSO."
@@ -60,7 +60,7 @@ class SearchHelper(BasePage):
     def authorize(self, user: User) -> None:
         "Производит авторизацию через гос услуги, используя логин/пароль."
         self.find_element(
-                GosUslugiSearchLocators.LOCATOR_LOGIN_BUTTON).send_keys(user.username)
+                GosUslugiSearchLocators.LOCATOR_LOGIN_INPUT_FIELD).send_keys(user.username)
         self.find_element(GosUslugiSearchLocators.LOCATOR_PASSWORD_INPUT_FIELD).send_keys(user.password)
         self.find_element(GosUslugiSearchLocators.LOCATOR_LOGIN_BUTTON).click()
 

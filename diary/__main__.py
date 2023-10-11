@@ -2,6 +2,10 @@ from diary.selenium_parser.BasePages import SearchHelper
 from diary.services.user import test_user
 
 
+def write_cookie_to_file(cookies, file: str = "cookies.json"):
+    with open(file, "w") as f:
+        f.write(cookies)
+
 def get_parcipiant_id():
     driver = SearchHelper()
     driver.go_to_diary_page()
@@ -11,7 +15,7 @@ def get_parcipiant_id():
     driver.send_authenticator_code(authorize_keys)
     driver.open_diary()
     cookie = driver.get_x1_sso_cookie()
-    print(cookie)
+    write_cookie_to_file(cookie)
     parcipiant_id = driver.get_participant_id()
     print(parcipiant_id)
     
