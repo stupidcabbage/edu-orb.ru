@@ -1,9 +1,8 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import Message
-
-from templates import render_template
 from api.diary import get_diary as gd
+from templates import render_template
 
 router = Router()
 

@@ -1,10 +1,11 @@
-from diary.selenium_parser.BaseApp import BasePage
 from selenium.webdriver.common.by import By
-from diary.services.user import User
-import time
 
-class X1_SSO_COOKIE_DOESNT_EXISTS(Exception):
-    "Исключение, если в cookies отсутвует X1_SSO."
+from diary.selenium_parser.BaseApp import BasePage
+from diary.services.user import User
+
+
+class COOKIE_DOESNT_EXISTS(Exception):
+    "Исключение, если в искоемые cookie отсутствует"
     pass
 
 
@@ -71,12 +72,21 @@ class SearchHelper(BasePage):
                 GosUslugiSearchLocators.LOCATOR_OF_OAUTH2_INPUT_FIELDS)
         for i, field in enumerate(elements, start=0):
             field.send_keys(str(authenticator_code)[i])
+    
+    def _get_curent_cookie(self, name_cookie: str):
+        "Возвращает определеннный куки."
+        cookies = self.get_cookies()
+        for cookie in cookies:
+            if cookie.get("name") == name_cookie:
+                return cookie
+        else:
+            raise COOKIE_DOESNT_EXISTS
+
+
+    def get_phpsessid(self):
+        "Возвращает PHPSESSID cookie."
+        return self._get_curent_cookie("PHPSESSID")
 
     def get_x1_sso_cookie(self):
         "Возвращает X1_SSO cookie."
-        cookies = self.get_cookeis()
-        for cookie in cookies:
-            if cookie.get("name") == "X1_SSO":
-                return cookie
-        else:
-            raise X1_SSO_COOKIE_DOESNT_EXISTS
+        return self._get_curent_cookie("X1_SSO")

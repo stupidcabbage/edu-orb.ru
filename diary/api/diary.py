@@ -1,6 +1,12 @@
+import datetime
 import json
+
 import requests
 from pydantic import BaseModel
+
+
+def get_tomorrow() -> str:
+    return (datetime.datetime.today() + datetime.timedelta(days=1)).strftime("%d.%m.%Y")
 
 class PreviosHomewok(BaseModel):
     date: str
@@ -41,12 +47,12 @@ def get_diary():
     for cook in cookie:
         s.cookies.set(cook['name'], cook['value'])
 
-    r = s.get("https://de.edu.orb.ru/#diary")
-    r = s.get("https://de.edu.orb.ru/edv/index/diary/A7A48C5F8B939B82826487956E3FA893?date=11.10.2023",
+    r = s.get(f"https://de.edu.orb.ru/edv/index/diary/A7A48C5F8B939B82826487956E3FA893?date={get_tomorrow()}",
               headers=headers).json()
     a = Diary.model_validate(r)
     return a.data.diary
 
+print(get_diary())
 # for day, lesson in get_diary().diary.items():
 #     print("на", day)
 #     for i in lesson:

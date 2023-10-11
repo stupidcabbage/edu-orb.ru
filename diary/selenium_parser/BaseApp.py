@@ -1,9 +1,9 @@
 from typing import Tuple
 
+from selenium import webdriver
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.remote.webelement import WebElement
-from selenium import webdriver
 
 
 class BasePage:
@@ -35,7 +35,7 @@ class BasePage:
                 EC.presence_of_all_elements_located(locator),
                 message=f"Не удалось найти элементы {locator}.")
 
-    def get_cookeis(self):
+    def get_cookies(self):
         "Возвращает все куки браузера."
         return self.driver.get_cookies()
 
