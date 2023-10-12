@@ -1,11 +1,9 @@
-Домашнее задание на неделю:
-
-{% for i in data %}
-{{ i }}<br>
-  {% for lesson in data[i] %}
-    {{ lesson.lessonNumber }}. {{lesson.subject}}:
-    {% if lesson.previousHomework %} {{ lesson.previousHomework.homework }} {% else %} Ничего не задали
-    {% endif %}
-    <br>
-  {% endfor %}
+Домашнее задание на {{ diary[0].date }}<br><br>
+{% for lesson in diary %}
+{{ lesson.lessonNumber }}. {{ lesson.subject }}: 
+{% if lesson.previousHomework %}
+{{ lesson.previousHomework.homework }}
+{% else %}
+Ничего не задали :)
+{% endif %}<br>
 {% endfor %}

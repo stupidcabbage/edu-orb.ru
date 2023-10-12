@@ -1,11 +1,7 @@
-from api.diary import get_lessons
+import dateparser
 
-from services.user import test_user
-import asyncio
-
-
-async def test_aio():
-    a = await get_lessons(date="10.10.2023", user=test_user)
-    print(a)
-asyncio.run(test_aio())
-
+a = dateparser.parse("11.03",
+                     settings={
+                         "TIMEZONE": "Asia/Yekaterinburg",
+                         "PREFER_DATES_FROM": "future"})
+print(a)
