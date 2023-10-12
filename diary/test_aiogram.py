@@ -4,12 +4,12 @@ import sys
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
-from handlers import diary, start
+from handlers import diary, start, authorize
 
 TOKEN = "6578207532:AAG1LuO53xhl3sKEeChzCrrLJADY2CdcvzA"
 
 
-HANDLERS = (diary.router, start.router,)
+HANDLERS = (diary.router, start.router, authorize.router, )
 
 async def main() -> None:
     bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
