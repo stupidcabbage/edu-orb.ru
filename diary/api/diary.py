@@ -1,12 +1,24 @@
 import datetime
-import json
 
-import requests
 from pydantic import BaseModel
 
+import aiohttp
+from services.user import User
 
-def get_tomorrow() -> str:
+
+WEEKDAYS = ("Понедельник", "Вторник", "Среда",
+            "Четверг", "Пятница", "Суббота", "Воскресенье")
+
+
+def get_weekday(date: str) -> str:
+    day, month, year = date.split(".")
+    weekday = WEEKDAYS[datetime.datetime(int(year), int(month), int(day)).weekday()]
+    return f"{day}.{month}. {weekday}"
+
+
+def get_tomorrow_date() -> str:
     return (datetime.datetime.today() + datetime.timedelta(days=1)).strftime("%d.%m.%Y")
+
 
 class PreviosHomewok(BaseModel):
     date: str
@@ -36,24 +48,43 @@ class Diary(BaseModel):
     data: Data
 
 
-headers = {
+HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0 (Edition Yx GX)"
 }
 
-def get_diary():
-    s = requests.Session()
-    with open("cookies.json", "r") as f:
-        cookie = json.load(f)
-    for cook in cookie:
-        s.cookies.set(cook['name'], cook['value'])
+async def get_diary_json(date: str, user: User) -> dict:
+    """
+    Возвращает расписание в виде json.
+    :param date str: Дата начала в расписании (DD.MM.YYYY).
+    :param user User: Пользователь, который делает запрос.
+    """
+    async with aiohttp.ClientSession(headers=HEADERS, 
+                                     cookies=user.cookies) as s:
+        async with s.get(f"https://de.edu.orb.ru/edv/index/diary/{user.parcipiant_id}?date={date}") as r:
+            return await r.json()
 
-    r = s.get(f"https://de.edu.orb.ru/edv/index/diary/A7A48C5F8B939B82826487956E3FA893?date={get_tomorrow()}",
-              headers=headers).json()
-    a = Diary.model_validate(r)
-    return a.data.diary
+async def get_diary(user: User, date: str = get_tomorrow_date()) -> Diary | None:
+    """
+    Возвращает расписание.
+    :param date str: Дата начала в расписании (DD.MM.YYYY). Default=следующий день.
+    :param user User: Пользователь, который делает запрос.
+    """
+    diary = await get_diary_json(date, user)
+    try:
+        return Diary.model_validate(diary)
+    except Exception:
+        return None
 
-print(get_diary())
-# for day, lesson in get_diary().diary.items():
-#     print("на", day)
-#     for i in lesson:
-#         print(f"{i.lessonNumber}. {i.subject}: {i.previousHomework.homework if i.previousHomework else i.homework}")
+
+async def get_lessons(user: User,
+                      date: str = get_tomorrow_date()) -> list[Lesson] | None:
+    """
+    Возвращает уроки переданного дня. Если в этот день нет уроков, то
+    возвращает None
+    :param date str: Дата начала в расписании (DD.MM.YYYY). Default=следующий день.
+    :param user User: Пользователь, который делает запрос.
+    """
+    diary = await get_diary(user, date)
+    if not diary:
+        return None
+    return diary.data.diary.get(get_weekday(date))
