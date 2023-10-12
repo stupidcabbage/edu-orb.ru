@@ -22,12 +22,6 @@ class SignUp(StatesGroup):
     oauth2 = State()
 
 
-def is_correct_login(login: str) -> bool:
-    return (bool(re.match(EMAIL_REGEX, login))
-            or bool(re.match(PHONE_NUMBER_REGEX, login))
-            or bool(re.match(SNILS_REGEX, login)))
-
-
 @router.callback_query(F.data == "signup")
 async def signup(callback: types.CallbackQuery,
                  state: FSMContext):
@@ -53,20 +47,15 @@ async def get_login(message: Message,
                     text="Увидел твой логин, отлично. Что насчет пароля, колись.")
             await state.set_state(SignUp.password)
         else:
-            await message.answer(text=f"логин: {user_data['login']}, пароль: {user_data['password']}. Correct?",
-                         reply_markup=SIGNUP_CORRECT_KEYBOARD())
-            await state.set_state()
+            await check_correctness_of_data(message, user_data, state)
 
 
 
 @router.message(SignUp.password)
 async def get_password(message: Message,
                        state: FSMContext):
-    user_data = await state.get_data()
     user_data = await state.update_data(password=message.text)
-    await message.answer(text=f"логин: {user_data['login']}, пароль: {user_data['password']}. Correct?",
-                         reply_markup=SIGNUP_CORRECT_KEYBOARD())
-    await state.set_state()
+    await check_correctness_of_data(message, user_data, state)
 
 
 @router.callback_query(F.data == "yes_correct_data")
@@ -85,3 +74,18 @@ async def password_incorrect(callback: types.CallbackQuery,
     await state.set_state(SignUp.password)
     await callback.message.answer("Введи новый пароль, друг")
     await callback.answer()
+
+
+def is_correct_login(login: str) -> bool:
+    return (bool(re.match(EMAIL_REGEX, login))
+            or bool(re.match(PHONE_NUMBER_REGEX, login))
+            or bool(re.match(SNILS_REGEX, login)))
+
+
+async def check_correctness_of_data(message: Message,
+                                    user_data: dict,
+                                    state: FSMContext) -> None:
+    await message.answer(
+            text=f"логин: {user_data['login']}, пароль: {user_data['password']}. Correct?",
+            reply_markup=SIGNUP_CORRECT_KEYBOARD())
+    await state.set_state()
