@@ -1,9 +1,9 @@
-Домашнее задание на {{ diary[0].date }}<br><br>
+Домашнее задание на {{ diary[0].date }} 📚<br><br>
 {% for lesson in diary %}
 {{ lesson.lessonNumber }}. {{ lesson.subject }}: 
 {% if lesson.previousHomework %}
 {{ lesson.previousHomework.homework }}
 {% else %}
-Ничего не задали :)
+-
 {% endif %}<br>
 {% endfor %}
