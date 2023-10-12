@@ -2,9 +2,10 @@ from aiogram import types, Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
-from aiogram.types import Message
+from aiogram.types import ContentType, Message
 
 from handlers.keyboards import SIGNUP_CORRECT_KEYBOARD 
+from templates import render_template
 
 import re
 
@@ -26,9 +27,9 @@ class SignUp(StatesGroup):
 async def signup(callback: types.CallbackQuery,
                  state: FSMContext):
     if not (await state.get_data()).get("password"):
-        await callback.message.answer("Похоже что ты крутой парень, раз решил регистрироваться.")
+        await callback.message.answer(await render_template("signup.j2"))
 
-    await callback.message.answer("Введи свой логин от гос услуг.")
+    await callback.message.answer(await render_template("login.j2"))
     await state.set_state(SignUp.login)
     await callback.answer()
 
@@ -36,8 +37,8 @@ async def signup(callback: types.CallbackQuery,
 @router.message(SignUp.login)
 async def get_login(message: Message,
                     state: FSMContext):
-    if not is_correct_login(message.text):
-        await message.answer("Похоже, что ты вводишь неправильный логин. Уверен во всех цифрах и буквах?")
+    if not is_correct_login(message.text if message.content_type is ContentType.TEXT else ""):
+        await message.answer(await render_template("incorrect_login.j2"))
 
     else:
         await state.update_data(login=message.text)
