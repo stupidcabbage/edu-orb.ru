@@ -14,11 +14,15 @@ def get_parcipiant_id():
     driver.go_to_diary_page()
     driver.go_to_gosuslugi_login_page()
     driver.authorize(test_user)
-    authorize_keys = int(input())
-    driver.send_authenticator_code(authorize_keys)
+    # print(driver.check_anomaly())
+    if driver.user_has_oauth2():
+        authorize_keys = input("Введите ключ двухэтапной аутентификации.")
+        driver.send_authenticator_code(authorize_keys)
+    else:
+        driver.skip_oauth2()
     driver.open_diary()
     cookie = driver.get_phpsessid()
-    write_cookie_to_file(cookie)
+    return cookie
     
 
-get_parcipiant_id()
+print(get_parcipiant_id())

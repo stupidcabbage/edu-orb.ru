@@ -4,18 +4,21 @@ from selenium import webdriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common.exceptions import NoSuchElementException
 
 
 class BasePage:
     "Общий интерфейс работы с  веб-сайтами."
     def __init__(self):
         options = webdriver.ChromeOptions()
-        options.add_argument("headless")
-        self.driver = webdriver.Chrome()
+        # options.add_argument("headless")
+        options.add_argument("--window-size=212,400")
+        options.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
+        self.driver = webdriver.Chrome(options=options)
         self.base_login_url = "https://de.edu.orb.ru/login"
         self.diary_url = "https://de.edu.orb.ru/#diary"
 
-    def find_element(self, locator: Tuple[str, str], time=10) -> WebElement:
+    def find_element(self, locator: Tuple[str, str], time=5000) -> WebElement:
         """
         Возвращает первый найденный элемент по заданным параметрам."
         :param locator: Искомый элемент.
@@ -34,6 +37,13 @@ class BasePage:
         return WebDriverWait(self.driver, time).until(
                 EC.presence_of_all_elements_located(locator),
                 message=f"Не удалось найти элементы {locator}.")
+    
+    def check_exists(self, locator: Tuple[str, str]):
+        try:
+            self.driver.find_element(*locator)
+        except NoSuchElementException:
+            return False
+        return True
 
     def get_cookies(self):
         "Возвращает все куки браузера."

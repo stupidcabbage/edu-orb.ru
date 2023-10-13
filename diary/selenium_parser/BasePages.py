@@ -1,7 +1,10 @@
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
+
 
 from diary.selenium_parser.BaseApp import BasePage
 from diary.services.user import User
+
 
 
 class COOKIE_DOESNT_EXISTS(Exception):
@@ -19,6 +22,8 @@ class GosUslugiSearchLocators:
     "Кнопка входа в гос услуги"
     LOCATOR_OF_OAUTH2_INPUT_FIELDS = (By.XPATH, "//input[@type='tel']")
     "Поля ввода для кода двухэтапной аутентификации."
+    LOCATOR_LATER_BUTTON = (By.CLASS_NAME, "plain-button-inline")
+    "Кнопка пропуска подключения входа с подтверждением."
 
 
 class EduSearchLocators:
@@ -57,7 +62,7 @@ class SearchHelper(BasePage):
         "Возвращает уникальный айди пользователя."
         return self.find_element(
                 EduSearchLocators.LOCATOR_PARTICIPANT_ID).get_attribute("data-guid")
-    
+
     def authorize(self, user: User) -> None:
         "Производит авторизацию через гос услуги, используя логин/пароль."
         self.find_element(
@@ -66,13 +71,34 @@ class SearchHelper(BasePage):
         self.find_element(GosUslugiSearchLocators.LOCATOR_LOGIN_BUTTON).click()
 
     def send_authenticator_code(
-            self, authenticator_code: int) -> None:
+            self, authenticator_code: str) -> None:
         "Вписывает код двухэтапной авторизации в поле ввода."
         elements = self.find_elements(
                 GosUslugiSearchLocators.LOCATOR_OF_OAUTH2_INPUT_FIELDS)
         for i, field in enumerate(elements, start=0):
-            field.send_keys(str(authenticator_code)[i])
+            field.send_keys(authenticator_code[i])
     
+    def user_has_oauth2(self):
+        "Проверяет наличие двухэтапной аутентификации."
+        try:
+            self.find_element(GosUslugiSearchLocators.LOCATOR_OF_OAUTH2_INPUT_FIELDS,
+                             time=1)
+        except TimeoutException:
+            return False
+        return True
+    
+    def skip_oauth2(self) -> None:
+        "Пропускает просьбу о подключении двухэтапной аутентификации."
+        self.find_element(GosUslugiSearchLocators.LOCATOR_LATER_BUTTON).click()
+
+    def check_anomaly(self) -> bool | str:
+        try:
+            anomaly_text = self.driver.find_element(By.XPATH, "/html/body/esia-root/esia-reaction/div/div/div/div/p/text()")
+            return True
+        except NoSuchElementException:
+            return False
+
+
     def _get_curent_cookie(self, name_cookie: str):
         "Возвращает определеннный куки."
         cookies = self.get_cookies()
