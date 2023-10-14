@@ -4,7 +4,6 @@ from selenium import webdriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException
 
 
 class BasePage:
@@ -38,13 +37,6 @@ class BasePage:
                 EC.presence_of_all_elements_located(locator),
                 message=f"Не удалось найти элементы {locator}.")
     
-    def check_exists(self, locator: Tuple[str, str]):
-        try:
-            self.driver.find_element(*locator)
-        except NoSuchElementException:
-            return False
-        return True
-
     def get_cookies(self):
         "Возвращает все куки браузера."
         return self.driver.get_cookies()

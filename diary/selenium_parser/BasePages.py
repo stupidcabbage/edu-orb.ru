@@ -1,6 +1,6 @@
 from typing import Literal
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
 
 
@@ -91,9 +91,8 @@ class SearchHelper(BasePage):
         self.find_element(GosUslugiSearchLocators.LOCATOR_LATER_BUTTON).click()
     
     def fix_photo_anomaly(self, code: str) -> None:
-        element = self.find_element((By.CLASS_NAME, "code-entry__input"))
-        element.send_keys(code)
-        self.find_element((By.CLASS_NAME, "code-entry__button button")).click()
+        self.find_element((By.XPATH, "//input[@type='text']")).send_keys(code)
+        self.find_element((By.XPATH, "//button[@class='code-entry__button button']")).click()
 
     def fix_captcha_anomaly(self, code: str) -> None:
         self.find_element((By.CLASS_NAME, "input__field")).send_keys(code)
@@ -102,14 +101,11 @@ class SearchHelper(BasePage):
     def check_anomaly(self):
         try:
             if self.find_element((By.CLASS_NAME, "anomaly")):
-                print("Find anomaly!")
                 try:
-                    self.find_element((By.CLASS_NAME, "esia-captcha__image"), time=1).screenshot("test.png")
-                    print("is not photo captcha")
+                    self.find_element((By.CLASS_NAME, "esia-captcha__image"), time=2).screenshot("test.png")
                     return True
                 except TimeoutException:
-                    print("is captcha")
-                    captcha_anomaly = self.find_element((By.XPATH, "//p[@class='anomaly__plain-text abstract-request-information__text']"), time=5).text
+                    captcha_anomaly = self.find_element((By.XPATH, "//p[@class='anomaly__plain-text abstract-request-information__text']"), time=2).text
                     return captcha_anomaly
         except TimeoutException:
             return False
