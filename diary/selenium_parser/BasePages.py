@@ -26,6 +26,20 @@ class GosUslugiSearchLocators:
     "Поля ввода для кода двухэтапной аутентификации."
     LOCATOR_LATER_BUTTON = (By.CLASS_NAME, "plain-button-inline")
     "Кнопка пропуска подключения входа с подтверждением."
+    LOCATOR_OF_ANOMALY_PHOTO_INPUT_FIELD = (By.XPATH, "//input[@type='text']")
+    "Поле ввода кода фото капчи."
+    LOCATOR_OF_ANOMALY_TEXT_INPUT_FIELD = (By.CLASS_NAME, "input__field")
+    "Поле ввод кода текстовой капчи."
+    LOCATOR_OF_ANOMALY_PHOTO_BUTTON = (By.XPATH, "//button[@class='code-entry__button button']")
+    "Кнопка подтверждения фото капчи."
+    LOCATOR_OF_ANOMALY_TEXT_BUTTON = (By.XPATH, "//button[@class='input__button anomaly__button']")
+    "Кнопка подтверждения текстовой капчи."
+    LOCATOR_OF_ANOMALY_CLASS = (By.CLASS_NAME, "anomaly")
+    "Класс аномалий."
+    LOCATOR_OF_IMAGE_CAPTCHA = (By.CLASS_NAME, "esia-captcha__image")
+    "Фотография с капчой."
+    LOCATOR_OF_TEXT_CAPTCHA = (By.XPATH, "//p[@class='anomaly__plain-text abstract-request-information__text']")
+    "Вопрос текстовой каптчи."
 
 
 class EduSearchLocators:
@@ -91,21 +105,24 @@ class SearchHelper(BasePage):
         self.find_element(GosUslugiSearchLocators.LOCATOR_LATER_BUTTON).click()
     
     def fix_photo_anomaly(self, code: str) -> None:
-        self.find_element((By.XPATH, "//input[@type='text']")).send_keys(code)
-        self.find_element((By.XPATH, "//button[@class='code-entry__button button']")).click()
+        "Решает фото каптчу."
+        self.find_element(GosUslugiSearchLocators.LOCATOR_OF_ANOMALY_PHOTO_INPUT_FIELD).send_keys(code)
+        self.find_element(GosUslugiSearchLocators.LOCATOR_OF_ANOMALY_PHOTO_BUTTON).click()
 
     def fix_captcha_anomaly(self, code: str) -> None:
-        self.find_element((By.CLASS_NAME, "input__field")).send_keys(code)
-        self.find_element((By.XPATH, "//button[@class='input__button anomaly__button']")).click()
+        "Решает текстовую каптчу."
+        self.find_element(GosUslugiSearchLocators.LOCATOR_OF_ANOMALY_TEXT_INPUT_FIELD).send_keys(code)
+        self.find_element(GosUslugiSearchLocators.LOCATOR_OF_ANOMALY_TEXT_BUTTON).click()
 
     def check_anomaly(self):
+        "Проверяет на наличие аномалий при авторизации."
         try:
-            if self.find_element((By.CLASS_NAME, "anomaly")):
+            if self.find_element(GosUslugiSearchLocators.LOCATOR_OF_ANOMALY_CLASS):
                 try:
-                    self.find_element((By.CLASS_NAME, "esia-captcha__image"), time=2).screenshot("test.png")
+                    self.find_element(GosUslugiSearchLocators.LOCATOR_OF_IMAGE_CAPTCHA, time=2).screenshot("test.png")
                     return True
                 except TimeoutException:
-                    captcha_anomaly = self.find_element((By.XPATH, "//p[@class='anomaly__plain-text abstract-request-information__text']"), time=2).text
+                    captcha_anomaly = self.find_element(GosUslugiSearchLocators.LOCATOR_OF_TEXT_CAPTCHA, time=2).text
                     return captcha_anomaly
         except TimeoutException:
             return False
