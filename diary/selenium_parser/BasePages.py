@@ -1,5 +1,7 @@
+from typing import Literal
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.webdriver.remote.webelement import WebElement
 
 
 from diary.selenium_parser.BaseApp import BasePage
@@ -71,31 +73,45 @@ class SearchHelper(BasePage):
         self.find_element(GosUslugiSearchLocators.LOCATOR_LOGIN_BUTTON).click()
 
     def send_authenticator_code(
-            self, authenticator_code: str) -> None:
+            self, authenticator_code: str, elements: list[WebElement]) -> None:
         "Вписывает код двухэтапной авторизации в поле ввода."
-        elements = self.find_elements(
-                GosUslugiSearchLocators.LOCATOR_OF_OAUTH2_INPUT_FIELDS)
         for i, field in enumerate(elements, start=0):
             field.send_keys(authenticator_code[i])
-    
-    def user_has_oauth2(self):
+
+    def user_has_oauth2(self) -> list[WebElement] | Literal[False]:
         "Проверяет наличие двухэтапной аутентификации."
         try:
-            self.find_element(GosUslugiSearchLocators.LOCATOR_OF_OAUTH2_INPUT_FIELDS,
-                             time=1)
+            return self.find_elements(
+                    GosUslugiSearchLocators.LOCATOR_OF_OAUTH2_INPUT_FIELDS)
         except TimeoutException:
             return False
-        return True
     
     def skip_oauth2(self) -> None:
         "Пропускает просьбу о подключении двухэтапной аутентификации."
         self.find_element(GosUslugiSearchLocators.LOCATOR_LATER_BUTTON).click()
+    
+    def fix_photo_anomaly(self, code: str) -> None:
+        element = self.find_element((By.CLASS_NAME, "code-entry__input"))
+        element.send_keys(code)
+        self.find_element((By.CLASS_NAME, "code-entry__button button")).click()
 
-    def check_anomaly(self) -> bool | str:
+    def fix_captcha_anomaly(self, code: str) -> None:
+        self.find_element((By.CLASS_NAME, "input__field")).send_keys(code)
+        self.find_element((By.XPATH, "//button[@class='input__button anomaly__button']")).click()
+
+    def check_anomaly(self):
         try:
-            anomaly_text = self.driver.find_element(By.XPATH, "/html/body/esia-root/esia-reaction/div/div/div/div/p/text()")
-            return True
-        except NoSuchElementException:
+            if self.find_element((By.CLASS_NAME, "anomaly")):
+                print("Find anomaly!")
+                try:
+                    self.find_element((By.CLASS_NAME, "esia-captcha__image"), time=1).screenshot("test.png")
+                    print("is not photo captcha")
+                    return True
+                except TimeoutException:
+                    print("is captcha")
+                    captcha_anomaly = self.find_element((By.XPATH, "//p[@class='anomaly__plain-text abstract-request-information__text']"), time=5).text
+                    return captcha_anomaly
+        except TimeoutException:
             return False
 
 

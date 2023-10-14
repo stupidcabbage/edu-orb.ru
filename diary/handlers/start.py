@@ -16,5 +16,6 @@ async def command_start(message: Message):
             callback_data="signup"))
         await message.answer("Привет, похоже ты здесь впервые!",
                              reply_markup=builder.as_markup())
+        await message.answer_photo("blob:https://esia.gosuslugi.ru/fcf30a93-c676-4201-b97a-d7c1d924afca")
     else:
         await message.answer(f"Привет, хозяин!")

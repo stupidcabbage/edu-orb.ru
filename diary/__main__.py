@@ -14,15 +14,22 @@ def get_parcipiant_id():
     driver.go_to_diary_page()
     driver.go_to_gosuslugi_login_page()
     driver.authorize(test_user)
-    # print(driver.check_anomaly())
-    if driver.user_has_oauth2():
-        authorize_keys = input("Введите ключ двухэтапной аутентификации.")
-        driver.send_authenticator_code(authorize_keys)
+    anomaly = driver.check_anomaly()
+    print(anomaly)
+    if type(anomaly) == str:
+        driver.fix_captcha_anomaly(input("Введите код из проверки капчи: "))
+    elif anomaly:
+        driver.fix_photo_anomaly(input("Введите код из проверки фото капчи: "))
+    else:
+        print(None)
+    elements = driver.user_has_oauth2()
+    if elements:
+        driver.send_authenticator_code(input("Введите код двухфакторной аутентификации"), elements)
     else:
         driver.skip_oauth2()
     driver.open_diary()
     cookie = driver.get_phpsessid()
-    return cookie
-    
+    parcipiant_id = driver.get_participant_id()
+    return cookie, parcipiant_id
 
 print(get_parcipiant_id())

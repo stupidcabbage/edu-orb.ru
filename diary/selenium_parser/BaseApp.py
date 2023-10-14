@@ -10,15 +10,15 @@ from selenium.common.exceptions import NoSuchElementException
 class BasePage:
     "Общий интерфейс работы с  веб-сайтами."
     def __init__(self):
-        options = webdriver.ChromeOptions()
-        # options.add_argument("headless")
-        options.add_argument("--window-size=212,400")
-        options.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
-        self.driver = webdriver.Chrome(options=options)
+        self.options = webdriver.ChromeOptions()
+        # self.options.add_argument("headless")
+        self.options.add_argument("--window-size=212,550")
+        # self.options.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
+        self.driver = webdriver.Chrome(options=self.options)
         self.base_login_url = "https://de.edu.orb.ru/login"
         self.diary_url = "https://de.edu.orb.ru/#diary"
 
-    def find_element(self, locator: Tuple[str, str], time=5000) -> WebElement:
+    def find_element(self, locator: Tuple[str, str], time=10) -> WebElement:
         """
         Возвращает первый найденный элемент по заданным параметрам."
         :param locator: Искомый элемент.
