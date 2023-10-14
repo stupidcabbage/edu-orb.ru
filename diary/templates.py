@@ -1,5 +1,6 @@
-import config
 import jinja2
+
+import config
 
 
 async def render_template(template_name: str, data: dict | None= None) -> str:

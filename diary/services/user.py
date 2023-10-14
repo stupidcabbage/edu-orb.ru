@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import LiteralString
 
-
 from diary.config import GOSUSLUGI_LOGIN, GOSUSLUGI_PASSWORD
 
 

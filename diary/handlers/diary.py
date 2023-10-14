@@ -1,10 +1,12 @@
 from aiogram import Router
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message
-from api.diary import get_lessons
-from templates import render_template
 from dateparser import parse
+
+from api.diary import get_lessons
 from services.user import test_user
+from templates import render_template
+
 router = Router()
 
 

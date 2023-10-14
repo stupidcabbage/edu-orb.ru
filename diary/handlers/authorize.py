@@ -1,14 +1,15 @@
-from aiogram import types, Router, F
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-
-from aiogram.types import ContentType, Message
-
-from handlers.keyboards import SIGNUP_CORRECT_KEYBOARD 
-from templates import render_template
-
 import re
 
+from aiogram import F, Router, types
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import ContentType, Message
+
+from config import BASE_DIR
+from handlers.keyboards import SIGNUP_CORRECT_KEYBOARD
+from selenium_parser.BasePages import SearchHelper
+from services.user import User
+from templates import render_template
 
 EMAIL_REGEX = r"^\S+@\S+\.\S+$"
 PHONE_NUMBER_REGEX = r"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$"
@@ -22,6 +23,8 @@ class SignUp(StatesGroup):
     login = State()
     password = State()
     correct_data = State()
+    text_anomaly = State()
+    photo_anomaly = State()
     oauth2 = State()
 
 
@@ -71,11 +74,77 @@ async def get_password(message: Message,
 async def correct_data(callback: types.CallbackQuery,
                        state: FSMContext):
     user_data = await state.get_data()
-    await callback.message.answer(f"{user_data['login']}, {user_data.get('password')}")
-    await callback.message.delete()
-    await state.clear()
+    user = User(username=user_data["login"],
+                password=user_data["password"],
+                telegram_id = callback.message.from_user.id)
+    await callback.message.edit_text(f"Пытаюсь войти...")
     await callback.answer()
 
+    driver = SearchHelper()
+    driver.go_to_diary_page()
+    driver.go_to_gosuslugi_login_page()
+    driver.authorize(user)
+    anomaly = driver.check_anomaly(user.telegram_id)
+    if type(anomaly) == str:
+        await callback.message.edit_text(await render_template("captcha.j2", {"captcha": anomaly}))
+        user_data.update({"driver": driver})
+        await state.set_state(SignUp.text_anomaly)
+        return
+
+    elif anomaly:
+        await callback.message.edit_text(await render_template("captcha.j2"))
+        photo = InputFile(f"{BASE_DIR}/temp/{user.telegram_id}.png")
+        await callback.message.answer_photo(photo)
+        user_data.update({"driver": driver})
+        await state.set_state(SignUp.photo_anomaly)
+        return 
+
+    elements = driver.user_has_oauth2()
+    if elements:
+        await callback.message.edit_text(await render_template("oauth2.j2"))
+        user_data.update({"driver": driver,
+                          "elements": elements})
+        await state.set_state(SignUp.oauth2)
+        return
+    driver.open_diary()
+    parcipiant_id = driver.get_participant_id()
+    await callback.message.answer(parcipiant_id)
+
+
+@router.message(SignUp.oauth2)
+async def oauth2(message: Message,
+                 state: FSMContext):
+    user_data = await state.get_data()
+    driver: SearchHelper = user_data["driver"]
+    elements = user_data["elements"]
+    value = message.text.lower()
+    driver.send_authenticator_code(value, elements)
+
+    driver.open_diary()
+    parcipiant_id = driver.get_participant_id()
+    await message.answer(parcipiant_id)
+
+
+@router.message(SignUp.photo_anomaly)
+async def photo_anomaly(message: Message,
+                        state: FSMContext):
+    user_data = await state.get_data()
+    driver: SearchHelper = user_data["driver"]
+    value = message.text.lower()
+    driver.fix_photo_anomaly(value)
+    await state.set_state(SignUp.oauth2)
+
+
+@router.message(SignUp.text_anomaly)
+async def text_anomaly(message: Message,
+                  state: FSMContext):
+    user_data = await state.get_data()
+    driver: SearchHelper = user_data["driver"]
+    value = message.text.lower()
+    driver.fix_captcha_anomaly(value)
+    await state.set_state(SignUp.oauth2)
+
+    
 
 @router.callback_query(F.data == "password_incorrect")
 async def password_incorrect(callback: types.CallbackQuery,
