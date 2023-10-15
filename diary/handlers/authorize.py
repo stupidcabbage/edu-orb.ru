@@ -1,4 +1,5 @@
 import re
+import threading
 
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
@@ -18,6 +19,7 @@ SNILS_REGEX = r"^\d{1,3}(\s*\d{3})*$"
 
 router = Router()
 
+driver = SearchHelper()
 
 class SignUp(StatesGroup):
     login = State()
@@ -79,11 +81,11 @@ async def correct_data(callback: types.CallbackQuery,
                 telegram_id = callback.message.from_user.id)
     await callback.message.edit_text(f"Пытаюсь войти...")
     await callback.answer()
-
-    driver = SearchHelper()
+    
     driver.go_to_diary_page()
     driver.go_to_gosuslugi_login_page()
     driver.authorize(user)
+
     anomaly = driver.check_anomaly(user.telegram_id)
     if type(anomaly) == str:
         await callback.message.edit_text(await render_template("captcha.j2", {"captcha": anomaly}))
@@ -102,26 +104,22 @@ async def correct_data(callback: types.CallbackQuery,
     elements = driver.user_has_oauth2()
     if elements:
         await callback.message.edit_text(await render_template("oauth2.j2"))
-        user_data.update({"driver": driver,
-                          "elements": elements})
         await state.set_state(SignUp.oauth2)
-        return
+
     driver.open_diary()
     parcipiant_id = driver.get_participant_id()
     await callback.message.answer(parcipiant_id)
 
-
 @router.message(SignUp.oauth2)
 async def oauth2(message: Message,
                  state: FSMContext):
-    user_data = await state.get_data()
-    driver: SearchHelper = user_data["driver"]
-    elements = user_data["elements"]
+    elements = driver.user_has_oauth2()
     value = message.text.lower()
     driver.send_authenticator_code(value, elements)
 
     driver.open_diary()
     parcipiant_id = driver.get_participant_id()
+    driver.driver.close()
     await message.answer(parcipiant_id)
 
 
