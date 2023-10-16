@@ -2,6 +2,7 @@ import re
 import threading
 
 from aiogram import F, Router, types
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ContentType, Message
@@ -20,6 +21,9 @@ SNILS_REGEX = r"^\d{1,3}(\s*\d{3})*$"
 router = Router()
 
 driver = SearchHelper()
+
+class Test(StatesGroup):
+    test = State()
 
 class SignUp(StatesGroup):
     login = State()
@@ -72,6 +76,42 @@ async def get_password(message: Message,
     await check_correctness_of_data(message, user_data, state)
 
 
+async def test_3(message: Message,
+                 state: FSMContext):
+    print(1)
+    while True:
+        if (await state.get_data()).get("test"):
+            message.answer("aaa")
+
+@router.message(Test.test)
+async def test_2(message: Message,
+                 state: FSMContext):
+    await state.update_data({"test": message.text.lower()})
+    await message.answer("Принял!")
+
+
+@router.message(Command("test"))
+async def test(message: Message,
+               state: FSMContext):
+    await message.answer("Навали говна")
+    await state.set_state(Test.test)
+    threading.Thread(target=test_3, args=(message, state))
+
+async def test_in_one_func(state: FSMContext,
+                     user):
+    driver = SearchHelper()
+    authorize_to_gosuslugi(driver, user)
+    anomaly = driver.check_anomaly(user.telegram_id)
+    if type(anomaly) == str:
+        await state.set_state()
+        
+
+def authorize_to_gosuslugi(driver, user):
+    driver.go_to_diary_page()
+    driver.go_to_gosuslugi_login_page()
+    driver.authorize(user)
+
+
 @router.callback_query(F.data == "yes_correct_data")
 async def correct_data(callback: types.CallbackQuery,
                        state: FSMContext):
@@ -82,32 +122,6 @@ async def correct_data(callback: types.CallbackQuery,
     await callback.message.edit_text(f"Пытаюсь войти...")
     await callback.answer()
     
-    driver.go_to_diary_page()
-    driver.go_to_gosuslugi_login_page()
-    driver.authorize(user)
-
-    anomaly = driver.check_anomaly(user.telegram_id)
-    if type(anomaly) == str:
-        await callback.message.edit_text(await render_template("captcha.j2", {"captcha": anomaly}))
-        user_data.update({"driver": driver})
-        await state.set_state(SignUp.text_anomaly)
-        return
-
-    elif anomaly:
-        await callback.message.edit_text(await render_template("captcha.j2"))
-        photo = InputFile(f"{BASE_DIR}/temp/{user.telegram_id}.png")
-        await callback.message.answer_photo(photo)
-        user_data.update({"driver": driver})
-        await state.set_state(SignUp.photo_anomaly)
-        return 
-
-    elements = driver.user_has_oauth2()
-    if elements:
-        await callback.message.edit_text(await render_template("oauth2.j2"))
-        await state.set_state(SignUp.oauth2)
-
-    driver.open_diary()
-    parcipiant_id = driver.get_participant_id()
     await callback.message.answer(parcipiant_id)
 
 @router.message(SignUp.oauth2)
