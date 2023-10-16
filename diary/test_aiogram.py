@@ -2,20 +2,17 @@ import asyncio
 import logging
 import sys
 
-from aiogram import Bot, Dispatcher
-from aiogram.enums import ParseMode
+from aiogram import Dispatcher
 
 from handlers import authorize, diary, start
-
-TOKEN = "6578207532:AAG1LuO53xhl3sKEeChzCrrLJADY2CdcvzA"
-
+from config import bot
 
 HANDLERS = (diary.router, start.router, authorize.router, )
 
-async def main() -> None:
-    bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
-    dp = Dispatcher()
 
+dp = Dispatcher()
+
+async def main() -> None:
     for handler in HANDLERS:
         dp.include_router(handler)
 

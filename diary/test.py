@@ -1,11 +1,15 @@
 from selenium_parser.BasePages import SearchHelper
+from services.user import test_user
 
 
-def authorize_to_gosuslugi(driver, user):
+def authorize_to_gosuslugi():
+    driver = SearchHelper()
     driver.go_to_diary_page()
     driver.go_to_gosuslugi_login_page()
-    driver.authorize(user)
-
+    driver.driver.s
+    
+driver = authorize_to_gosuslugi()
+driver.authorize(test_user)
 
 def check_anomaly_while_authorize(driver, message):
     anomaly = driver.check_anomaly()
