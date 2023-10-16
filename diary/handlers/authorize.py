@@ -1,13 +1,14 @@
-import re
-import threading
-
 import asyncio
-from handlers.telebot_authorize import test
+import re
+import time
+from telebot import threading
+from handlers.telebot_authorize import main
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ContentType, Message
 
+from config import bot
 from handlers.keyboards import SIGNUP_CORRECT_KEYBOARD
 from selenium_parser.BasePages import SearchHelper
 from services.user import User
@@ -61,7 +62,6 @@ async def get_login(message: Message,
     await check_correctness_of_data(message, user_data, state)
 
 
-
 @router.message(SignUp.password)
 async def get_password(message: Message,
                        state: FSMContext):
@@ -73,6 +73,41 @@ async def get_password(message: Message,
     user_data = await state.update_data(password=message.text)
     await check_correctness_of_data(message, user_data, state)
 
+async def get_code(state: FSMContext,
+                   data: str):
+    while True:
+        print(await state.get_data())
+        value = (await state.get_data()).get(data)
+        if value:
+            return value
+        time.sleep(5)
+
+
+async def authorize_gosuslugi(user: User,
+                              message: Message,
+                              state: FSMContext):
+    bot = telebot.TeleBot(TOKEN)
+    driver = SearchHelper()
+    driver.go_to_diary_page()
+    driver.go_to_gosuslugi_login_page()
+    driver.authorize(user)
+    elements = driver.user_has_oauth2()
+    if elements:
+        print(1)
+        await state.set_state(SignUp.oauth2)
+        code = await get_code(state, "oauth2")
+        driver.send_authenticator_code(code, elements)
+    else:
+        driver.skip_oauth2()
+    driver.open_diary()
+    parcipiant_id = driver.get_participant_id()
+    await bot.send_message(user.telegram_id,
+                           text=parcipiant_id)
+
+
+def wrap_async_func(user, message, state):
+        asyncio.run(authorize_gosuslugi(user, message, state))
+
 
 @router.callback_query(F.data == "yes_correct_data")
 async def correct_data(callback: types.CallbackQuery,
@@ -82,7 +117,8 @@ async def correct_data(callback: types.CallbackQuery,
                 password=user_data["password"],
                 telegram_id = callback.message.from_user.id)
     await callback.message.edit_text(f"Пытаюсь войти...")
-    test()
+    _thread = threading.Thread(target=wrap_async_func, args=(user, callback.message, state))
+    _thread.start()
     await callback.answer()
 
 @router.message(SignUp.oauth2)
