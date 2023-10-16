@@ -7,15 +7,14 @@ from aiogram.enums import ParseMode
 
 from handlers import authorize, diary, start
 
-TOKEN = "6578207532:AAG1LuO53xhl3sKEeChzCrrLJADY2CdcvzA"
-
+TOKEN = "5665742116:AAFBdCmms0jGzxKwuobykHZi-40-dpWrjyw"
 
 HANDLERS = (diary.router, start.router, authorize.router, )
+
 
 async def main() -> None:
     bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
     dp = Dispatcher()
-
     for handler in HANDLERS:
         dp.include_router(handler)
 
