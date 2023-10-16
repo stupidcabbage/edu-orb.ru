@@ -4,7 +4,8 @@ import sys
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
-from handlers import diary, start, authorize
+
+from handlers import authorize, diary, start
 
 TOKEN = "6578207532:AAG1LuO53xhl3sKEeChzCrrLJADY2CdcvzA"
 

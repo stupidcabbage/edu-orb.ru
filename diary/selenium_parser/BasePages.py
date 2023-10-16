@@ -1,12 +1,12 @@
 from typing import Literal
-from selenium.webdriver.common.by import By
+
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-
+from config import BASE_DIR
 from diary.selenium_parser.BaseApp import BasePage
 from diary.services.user import User
-
 
 
 class COOKIE_DOESNT_EXISTS(Exception):
@@ -114,12 +114,12 @@ class SearchHelper(BasePage):
         self.find_element(GosUslugiSearchLocators.LOCATOR_OF_ANOMALY_TEXT_INPUT_FIELD).send_keys(code)
         self.find_element(GosUslugiSearchLocators.LOCATOR_OF_ANOMALY_TEXT_BUTTON).click()
 
-    def check_anomaly(self):
+    def check_anomaly(self, telegram_id: int):
         "Проверяет на наличие аномалий при авторизации."
         try:
             if self.find_element(GosUslugiSearchLocators.LOCATOR_OF_ANOMALY_CLASS):
                 try:
-                    self.find_element(GosUslugiSearchLocators.LOCATOR_OF_IMAGE_CAPTCHA, time=2).screenshot("test.png")
+                    self.find_element(GosUslugiSearchLocators.LOCATOR_OF_IMAGE_CAPTCHA, time=2).screenshot(f"{BASE_DIR}/temp/{telegram_id}.png")
                     return True
                 except TimeoutException:
                     captcha_anomaly = self.find_element(GosUslugiSearchLocators.LOCATOR_OF_TEXT_CAPTCHA, time=2).text

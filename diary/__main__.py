@@ -2,6 +2,7 @@ import json
 
 from diary.selenium_parser.BasePages import SearchHelper
 from diary.services.user import test_user
+from templates import render_template
 
 
 def write_cookie_to_file(cookies, file: str = "cookies.json"):
@@ -9,14 +10,14 @@ def write_cookie_to_file(cookies, file: str = "cookies.json"):
         json.dump(cookies, f)
 
 
-def get_parcipiant_id():
+async def get_parcipiant_id(message):
     driver = SearchHelper()
     driver.go_to_diary_page()
     driver.go_to_gosuslugi_login_page()
     driver.authorize(test_user)
     anomaly = driver.check_anomaly()
-    print(anomaly)
     if type(anomaly) == str:
+        await message.answer(render_template("captcha.j2", {"captcha": anomaly}))
         driver.fix_captcha_anomaly(input("Введите код из проверки капчи: "))
     elif anomaly:
         driver.fix_photo_anomaly(input("Введите код из проверки фото капчи: "))
