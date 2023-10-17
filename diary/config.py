@@ -17,5 +17,7 @@ TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
 TOKEN = "5665742116:AAFBdCmms0jGzxKwuobykHZi-40-dpWrjyw"
 
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
+second_bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
+
 
 TEMPLATES_DIR = BASE_DIR / "templates"

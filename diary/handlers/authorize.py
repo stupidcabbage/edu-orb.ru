@@ -2,13 +2,12 @@ import asyncio
 import re
 import time
 from telebot import threading
-from handlers.telebot_authorize import main
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ContentType, Message
 
-from config import bot
+from config import second_bot
 from handlers.keyboards import SIGNUP_CORRECT_KEYBOARD
 from selenium_parser.BasePages import SearchHelper
 from services.user import User
@@ -86,14 +85,14 @@ async def get_code(state: FSMContext,
 async def authorize_gosuslugi(user: User,
                               message: Message,
                               state: FSMContext):
-    bot = telebot.TeleBot(TOKEN)
     driver = SearchHelper()
     driver.go_to_diary_page()
     driver.go_to_gosuslugi_login_page()
     driver.authorize(user)
     elements = driver.user_has_oauth2()
     if elements:
-        print(1)
+        await second_bot.send_message(user.telegram_id,
+                                      text=await render_template("oauth2.j2"))
         await state.set_state(SignUp.oauth2)
         code = await get_code(state, "oauth2")
         driver.send_authenticator_code(code, elements)
@@ -101,7 +100,7 @@ async def authorize_gosuslugi(user: User,
         driver.skip_oauth2()
     driver.open_diary()
     parcipiant_id = driver.get_participant_id()
-    await bot.send_message(user.telegram_id,
+    await second_bot.send_message(user.telegram_id,
                            text=parcipiant_id)
 
 
@@ -115,7 +114,7 @@ async def correct_data(callback: types.CallbackQuery,
     user_data = await state.get_data()
     user = User(username=user_data["login"],
                 password=user_data["password"],
-                telegram_id = callback.message.from_user.id)
+                telegram_id = callback.message.chat.id)
     await callback.message.edit_text(f"Пытаюсь войти...")
     _thread = threading.Thread(target=wrap_async_func, args=(user, callback.message, state))
     _thread.start()
