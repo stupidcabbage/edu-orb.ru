@@ -17,12 +17,12 @@ aiohttp = "^3.8.5"
 aiogram = "^3.1.1"
 jinja2 = "^3.1.2"
 dateparser = "^1.1.8"
+lxml = "^4.9.3"
 
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
 httplib2 = "^0.22.0"
-telebot = "^0.0.5"
 
 [build-system]
 requires = ["poetry-core"]

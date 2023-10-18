@@ -1,18 +1,19 @@
 import asyncio
+import os
 import re
-import time
 import threading
+import time
+
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import ContentType, InputFile, Message
+from aiogram.types import ContentType, FSInputFile, InputFile, Message
 
 from diary.config import BASE_DIR, second_bot
 from diary.handlers.keyboards import SIGNUP_CORRECT_KEYBOARD
 from diary.selenium_parser.BasePages import SearchHelper
 from diary.services.user import User
 from diary.templates import render_template
-
 
 EMAIL_REGEX = r"^\S+@\S+\.\S+$"
 PHONE_NUMBER_REGEX = r"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$"
@@ -87,7 +88,6 @@ async def authorize_gosuslugi(user: User,
     driver.go_to_diary_page()
     driver.go_to_gosuslugi_login_page()
     driver.authorize(user)
-    elements = driver.user_has_oauth2()
     anomaly = driver.check_anomaly(user.telegram_id)
 
     if type(anomaly) == str:
@@ -97,18 +97,19 @@ async def authorize_gosuslugi(user: User,
         await state.set_state(SignUp.anomaly)
         code = await get_code(state, "anomaly")
         driver.fix_captcha_anomaly(code)
+
     elif anomaly:
         await second_bot.send_message(
                 user.telegram_id,
                 await render_template("captcha.j2"))
-        with open(f"{BASE_DIR}/temp/{user.telegram_id}.png", "rb") as photo:
-            await second_bot.send_photo(
-                    chat_id=user.telegram_id,
-                    photo=photo)
+        await second_bot.send_photo(
+                chat_id=user.telegram_id,
+                photo=FSInputFile(f"{BASE_DIR}/temp/{user.telegram_id}.png"))
         await state.set_state(SignUp.anomaly)
         code = await get_code(state, "anomaly")
         driver.fix_photo_anomaly(code)
 
+    elements = driver.user_has_oauth2()
     if elements:
         await second_bot.send_message(user.telegram_id,
                                       text=await render_template("oauth2.j2"))
@@ -117,6 +118,29 @@ async def authorize_gosuslugi(user: User,
         driver.send_authenticator_code(code, elements)
     else:
         driver.skip_oauth2()
+    
+
+    anomaly = driver.check_anomaly(user.telegram_id)
+
+    if type(anomaly) == str:
+        await second_bot.send_message(
+                user.telegram_id,
+                await render_template("captcha.j2", {"captcha": anomaly}))
+        await state.set_state(SignUp.anomaly)
+        code = await get_code(state, "anomaly")
+        driver.fix_captcha_anomaly(code)
+
+    elif anomaly:
+        await second_bot.send_message(
+                user.telegram_id,
+                await render_template("captcha.j2"))
+        await second_bot.send_photo(
+                chat_id=user.telegram_id,
+                photo=FSInputFile(f"{BASE_DIR}/temp/{user.telegram_id}.png"))
+        await state.set_state(SignUp.anomaly)
+        code = await get_code(state, "anomaly")
+        driver.fix_photo_anomaly(code)
+
     driver.diary_is_open()
     parcipiant_id = driver.get_phpsessid()
     driver.open_diary()

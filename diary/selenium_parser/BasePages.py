@@ -1,4 +1,5 @@
 from typing import Literal
+from bs4 import BeautifulSoup
 
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
@@ -93,10 +94,11 @@ class SearchHelper(BasePage):
         "Проверяет наличие двухэтапной аутентификации."
         try:
             return self.find_elements(
-                    GosUslugiSearchLocators.LOCATOR_OF_OAUTH2_INPUT_FIELDS)
+                    GosUslugiSearchLocators.LOCATOR_OF_OAUTH2_INPUT_FIELDS,
+                    time=5)
         except TimeoutException:
             return False
-    
+
     def skip_oauth2(self) -> None:
         "Пропускает просьбу о подключении двухэтапной аутентификации."
         self.find_element(GosUslugiSearchLocators.LOCATOR_LATER_BUTTON).click()
@@ -113,16 +115,16 @@ class SearchHelper(BasePage):
 
     def check_anomaly(self, telegram_id: int):
         "Проверяет на наличие аномалий при авторизации."
-        try:
-            if self.find_element(GosUslugiSearchLocators.LOCATOR_OF_ANOMALY_CLASS):
-                try:
-                    self.find_element(GosUslugiSearchLocators.LOCATOR_OF_IMAGE_CAPTCHA, time=2).screenshot(f"{BASE_DIR}/temp/{telegram_id}.png")
-                    return True
-                except TimeoutException:
-                    captcha_anomaly = self.find_element(GosUslugiSearchLocators.LOCATOR_OF_TEXT_CAPTCHA, time=2).text
-                    return captcha_anomaly
-        except TimeoutException:
-            return False
+        soup = BeautifulSoup(self.driver.page_source, "html.parser")
+        result = soup.find("div", {"class": "anomaly"})
+        if result:
+            try:
+                self.find_element(GosUslugiSearchLocators.LOCATOR_OF_IMAGE_CAPTCHA, time=2).screenshot(f"{BASE_DIR}/temp/{telegram_id}.png")
+                return True
+            except TimeoutException:
+                captcha_anomaly = self.find_element(GosUslugiSearchLocators.LOCATOR_OF_TEXT_CAPTCHA, time=2).text
+                return captcha_anomaly
+        return False
 
 
     def _get_curent_cookie(self, name_cookie: str):
