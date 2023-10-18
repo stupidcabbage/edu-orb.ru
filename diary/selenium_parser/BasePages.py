@@ -4,7 +4,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from config import BASE_DIR
+from diary.config import BASE_DIR
 from diary.selenium_parser.BaseApp import BasePage
 from diary.services.user import User
 

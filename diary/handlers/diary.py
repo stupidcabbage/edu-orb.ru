@@ -3,9 +3,9 @@ from aiogram.filters import Command, CommandObject
 from aiogram.types import Message
 from dateparser import parse
 
-from api.diary import get_lessons
-from services.user import test_user
-from templates import render_template
+from diary.api.diary import get_lessons
+from diary.services.user import test_user
+from diary.templates import render_template
 
 router = Router()
 

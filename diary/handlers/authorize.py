@@ -7,11 +7,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ContentType, InputFile, Message
 
-from config import BASE_DIR, second_bot
-from handlers.keyboards import SIGNUP_CORRECT_KEYBOARD
-from selenium_parser.BasePages import SearchHelper
-from services.user import User
-from templates import render_template
+from diary.config import BASE_DIR, second_bot
+from diary.handlers.keyboards import SIGNUP_CORRECT_KEYBOARD
+from diary.selenium_parser.BasePages import SearchHelper
+from diary.services.user import User
+from diary.templates import render_template
 
 
 EMAIL_REGEX = r"^\S+@\S+\.\S+$"
