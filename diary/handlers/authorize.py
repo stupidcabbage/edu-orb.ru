@@ -1,17 +1,18 @@
 import asyncio
 import re
 import time
-from telebot import threading
+import threading
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import ContentType, Message
+from aiogram.types import ContentType, InputFile, Message
 
-from config import second_bot
+from config import BASE_DIR, second_bot
 from handlers.keyboards import SIGNUP_CORRECT_KEYBOARD
 from selenium_parser.BasePages import SearchHelper
 from services.user import User
 from templates import render_template
+
 
 EMAIL_REGEX = r"^\S+@\S+\.\S+$"
 PHONE_NUMBER_REGEX = r"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$"
@@ -20,9 +21,6 @@ SNILS_REGEX = r"^\d{1,3}(\s*\d{3})*$"
 
 router = Router()
 
-
-class Test(StatesGroup):
-    test = State()
 
 class SignUp(StatesGroup):
     login = State()
@@ -72,6 +70,7 @@ async def get_password(message: Message,
     user_data = await state.update_data(password=message.text)
     await check_correctness_of_data(message, user_data, state)
 
+
 async def get_code(state: FSMContext,
                    data: str):
     while True:
@@ -83,13 +82,33 @@ async def get_code(state: FSMContext,
 
 
 async def authorize_gosuslugi(user: User,
-                              message: Message,
                               state: FSMContext):
     driver = SearchHelper()
     driver.go_to_diary_page()
     driver.go_to_gosuslugi_login_page()
     driver.authorize(user)
     elements = driver.user_has_oauth2()
+    anomaly = driver.check_anomaly(user.telegram_id)
+
+    if type(anomaly) == str:
+        await second_bot.send_message(
+                user.telegram_id,
+                await render_template("captcha.j2", {"captcha": anomaly}))
+        await state.set_state(SignUp.anomaly)
+        code = await get_code(state, "anomaly")
+        driver.fix_captcha_anomaly(code)
+    elif anomaly:
+        await second_bot.send_message(
+                user.telegram_id,
+                await render_template("captcha.j2"))
+        with open(f"{BASE_DIR}/temp/{user.telegram_id}.png", "rb") as photo:
+            await second_bot.send_photo(
+                    chat_id=user.telegram_id,
+                    photo=photo)
+        await state.set_state(SignUp.anomaly)
+        code = await get_code(state, "anomaly")
+        driver.fix_photo_anomaly(code)
+
     if elements:
         await second_bot.send_message(user.telegram_id,
                                       text=await render_template("oauth2.j2"))
@@ -98,14 +117,15 @@ async def authorize_gosuslugi(user: User,
         driver.send_authenticator_code(code, elements)
     else:
         driver.skip_oauth2()
+
     driver.open_diary()
     parcipiant_id = driver.get_participant_id()
     await second_bot.send_message(user.telegram_id,
                            text=parcipiant_id)
 
 
-def wrap_async_func(user, message, state):
-        asyncio.run(authorize_gosuslugi(user, message, state))
+def wrap_async_func(user, state):
+        asyncio.run(authorize_gosuslugi(user, state))
 
 
 @router.callback_query(F.data == "yes_correct_data")
@@ -116,9 +136,10 @@ async def correct_data(callback: types.CallbackQuery,
                 password=user_data["password"],
                 telegram_id = callback.message.chat.id)
     await callback.message.edit_text(f"Пытаюсь войти...")
-    _thread = threading.Thread(target=wrap_async_func, args=(user, callback.message, state))
+    _thread = threading.Thread(target=wrap_async_func, args=(user, state))
     _thread.start()
     await callback.answer()
+
 
 @router.message(SignUp.oauth2)
 async def oauth2(message: Message,
@@ -127,7 +148,7 @@ async def oauth2(message: Message,
 
 
 @router.message(SignUp.anomaly)
-async def photo_anomaly(message: Message,
+async def anomaly(message: Message,
                         state: FSMContext):
     await state.update_data(anomaly=message.text.lower())
 

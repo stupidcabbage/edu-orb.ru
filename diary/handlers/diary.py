@@ -26,15 +26,18 @@ async def get_tomorrow_lessons(message: Message,
         diary = await get_lessons(test_user)
         if not diary:
             diary = await get_lessons(test_user, parse_date("понедельник"))
+
         await message.answer(await render_template("diary.j2", {"diary": diary}))
-    else:
-        date = parse_date(command.args)
-        if not date:
-            await message.answer("Время указано неправильно!")
-        else:
-            diary = await get_lessons(test_user, date)
-            if not diary:
-                await message.answer(await render_template("nolessons.j2", {"date": date}))
-                await message.answer_sticker("https://i.imgur.com/gYYgAih.mp4")
-            else:
-                await message.answer(await render_template("diary.j2", {"diary": diary}))
+        return 
+
+    date = parse_date(command.args)
+    if not date:
+        await message.answer("Время указано неправильно!")
+        return
+    diary = await get_lessons(test_user, date)
+
+    if not diary:
+        await message.answer(await render_template("nolessons.j2", {"date": date}))
+        await message.answer_sticker("https://i.imgur.com/gYYgAih.mp4")
+        return
+    await message.answer(await render_template("diary.j2", {"diary": diary}))

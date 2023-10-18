@@ -15,5 +15,5 @@ async def command_start(message: Message):
             callback_data="signup"))
         await message.answer("Привет, похоже ты здесь впервые!",
                              reply_markup=builder.as_markup())
-    else:
-        await message.answer(f"Привет, хозяин!")
+        return
+    await message.answer(f"Привет, хозяин!")
