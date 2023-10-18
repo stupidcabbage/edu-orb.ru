@@ -117,7 +117,8 @@ async def authorize_gosuslugi(user: User,
         driver.send_authenticator_code(code, elements)
     else:
         driver.skip_oauth2()
-
+    driver.diary_is_open()
+    parcipiant_id = driver.get_phpsessid()
     driver.open_diary()
     parcipiant_id = driver.get_participant_id()
     await second_bot.send_message(user.telegram_id,

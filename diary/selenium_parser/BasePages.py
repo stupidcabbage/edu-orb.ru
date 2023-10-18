@@ -52,27 +52,24 @@ class EduSearchLocators:
     "Фрейм дневника."
     LOCATOR_PARTICIPANT_ID = (By.ID, "participant")
     "Уникальный айди пользователя."
+    LOCATOR_OF_MENU_BUTTON = (By.ID, "button-1061-btnInnerEl")
 
 
 class SearchHelper(BasePage):
-    def open_diary(self):
-        "Открывает дневник."
-        self.click_on_diary_button()
-        self.switch_to_diary_iframe()
-    
     def go_to_gosuslugi_login_page(self):
         "Переходит на страницу авторизации через гос услуги."
         self.find_element(EduSearchLocators.LOCATOR_LOGIN_BUTTON).click() 
     
-    def switch_to_diary_iframe(self):
-        "Переходит на фрейм с данными из электронного дневника."
-        iframe = self.find_element(EduSearchLocators.LOCATOR_DIARY_IFRAME)
-        self.driver.switch_to.frame(iframe)
-    
-    def click_on_diary_button(self):
-        "Открывает фрейм электронного дневника."
-        return self.find_element(
-                EduSearchLocators.LOCATOR_DIARY_BUTTON).click()
+    def open_diary(self):
+        "Открывает дневник."
+        self.driver.get("https://de.edu.orb.ru/edv/index/participant")
+
+    def diary_is_open(self):
+        """
+        Проверяет, что пользователь после страницы авторизации
+        перешел на сайт дневника.
+        """
+        return self.find_element(EduSearchLocators.LOCATOR_OF_MENU_BUTTON)
     
     def get_participant_id(self):
         "Возвращает уникальный айди пользователя."
@@ -134,14 +131,9 @@ class SearchHelper(BasePage):
         for cookie in cookies:
             if cookie.get("name") == name_cookie:
                 return cookie
-        else:
-            raise COOKIE_DOESNT_EXISTS
+        raise COOKIE_DOESNT_EXISTS
 
 
     def get_phpsessid(self):
         "Возвращает PHPSESSID cookie."
         return self._get_curent_cookie("PHPSESSID")
-
-    def get_x1_sso_cookie(self):
-        "Возвращает X1_SSO cookie."
-        return self._get_curent_cookie("X1_SSO")
