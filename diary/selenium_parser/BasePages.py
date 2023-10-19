@@ -135,6 +135,14 @@ class SearchHelper(BasePage):
                 return cookie
         raise COOKIE_DOESNT_EXISTS
 
+    def authorize_not_success(self) -> bool:
+        try:
+            self.find_element((By.XPATH, "//div[@class='error-label']"), time=1)
+            return True
+        except TimeoutException:
+            return False
+
+        
 
     def get_phpsessid(self):
         "Возвращает PHPSESSID cookie."

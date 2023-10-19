@@ -1,13 +1,12 @@
 from dataclasses import dataclass
-from typing import LiteralString
 
 from diary.config import GOSUSLUGI_LOGIN, GOSUSLUGI_PASSWORD
 
 
 @dataclass
 class User:
-    username: LiteralString
-    password: LiteralString
+    username: str
+    password: str
     telegram_id: int
     parcipiant_id: str | None = None
     cookies: dict | None = None

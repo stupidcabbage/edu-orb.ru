@@ -7,7 +7,7 @@ def SIGNUP_CORRECT_KEYBOARD():
             [types.InlineKeyboardButton(text="Да, они верны! ✅", 
                                         callback_data="yes_correct_data")],
             [types.InlineKeyboardButton(text="Нужно исправить логин!",
-                                        callback_data="signup"),
+                                        callback_data="login_incorrect"),
             types.InlineKeyboardButton(text="Нужно исправить пароль!",
                                        callback_data="password_incorrect")]
             ]

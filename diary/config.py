@@ -17,5 +17,8 @@ TOKEN = "5665742116:AAFBdCmms0jGzxKwuobykHZi-40-dpWrjyw"
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 second_bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 
+EMAIL_REGEX = r"^\S+@\S+\.\S+$"
+PHONE_NUMBER_REGEX = r"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$"
+SNILS_REGEX = r"^\d{1,3}(\s*\d{3})*$"
 
 TEMPLATES_DIR = BASE_DIR / "templates"
