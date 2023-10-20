@@ -7,6 +7,7 @@ from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ContentType, FSInputFile, Message
+from pydantic import Extra
 
 from diary.config import BASE_DIR, second_bot
 from diary.handlers.keyboards import SIGNUP_CORRECT_KEYBOARD
@@ -14,7 +15,7 @@ from diary.selenium_parser.BasePages import SearchHelper
 from diary.services.files import delete_file
 from diary.services.user import User
 from diary.templates import render_template
-from diary.config import EMAIL_REGEX, PHONE_NUMBER_REGEX, SNILS_REGEX
+from diary.config import EMAIL_REGEX, PHONE_NUMBER_REGEX, SNILS_REGEX, OAUTH2_REGEX
 
 
 router = Router()
@@ -54,9 +55,6 @@ async def get_login(message: Message,
         await _set_password_state_with_message(message, state)
         return
     
-    user = User(username=user_data["login"],
-                password=user_data["password"],
-                telegram_id=message.chat.id)
     await _check_correctness_of_data(state, message)
 
 
@@ -67,11 +65,7 @@ async def get_password(message: Message,
         await message.answer(await render_template(
             "incorrect_data.j2", {"field": "пароль"}))
         return
-
-    user_data = await state.update_data(password=message.text)
-    user = User(username=user_data["login"],
-                password=user_data["password"],
-                telegram_id=message.chat.id)
+    await state.update_data(password=message.text)
     await _check_correctness_of_data(state, message)
 
 
@@ -85,11 +79,12 @@ async def get_code(state: FSMContext,
 
 
 async def restart_authorize(user: User,
-                            state: FSMContext):
-    await second_bot.send_message(
+                            state: FSMContext,
+                            error: str):
+    second_bot.send_message(
             user.telegram_id,
             await render_template("incorrect_authorization.j2",
-                                  {"error": "Введен неправильный логин или пароль."}))
+                                  {"error": error}))
     await state.clear()
 
 
@@ -99,24 +94,21 @@ async def authorize_gosuslugi(user: User,
     driver.go_to_diary_page()
     driver.go_to_gosuslugi_login_page()
     driver.authorize(user)
-    
-    anomaly = driver.check_anomaly(user.telegram_id)
-    if type(anomaly) == str:
-        code = await _get_anomaly_code_and_send_message(user, state, anomaly)
-        driver.fix_captcha_anomaly(code)
 
     if driver.authorize_not_success():
-        await second_bot.send_message(
-                user.telegram_id,
-                await render_template("incorrect_authorization.j2",
-                                      {"error": "Введен неправильный логин или пароль."}))
-        await state.clear()
+        await restart_authorize(user,
+                                state,
+                                "Введен неправильный логин или пароль.")
         return
 
-    elif anomaly:
+    anomaly = driver.check_anomaly(user.telegram_id)
+    if anomaly == "TEXT_CAPTCHA":
+        code = await _get_anomaly_code_and_send_message(user, state)
+        driver.fix_captcha_anomaly(code)
+
+    elif anomaly == "PHOTO_CAPTCHA":
         code = await _get_anomaly_code_and_send_message(user, state)
         driver.fix_photo_anomaly(code)
-
     elements = driver.user_has_oauth2()
 
     if elements:
@@ -125,28 +117,40 @@ async def authorize_gosuslugi(user: User,
     else:
         driver.skip_oauth2()
     
+    if driver.check_oauth2_error():
+        await restart_authorize(user, state,
+                                "Введен неправильный код двухфакторной аутентификации.")
+        return
 
     anomaly = driver.check_anomaly(user.telegram_id)
-
-    if type(anomaly) == str:
-        code = await _get_anomaly_code_and_send_message(user, state, anomaly)
+    if anomaly == "TEXT_CAPTCHA":
+        code = await _get_anomaly_code_and_send_message(user, state)
         driver.fix_captcha_anomaly(code)
 
-    elif anomaly:
+    elif anomaly == "PHOTO_CAPTCHA":
         code = await _get_anomaly_code_and_send_message(user, state)
         driver.fix_photo_anomaly(code)
+    
+    if driver.authorize_not_success():
+        await restart_authorize(user, state,
+                                "Введен неправильный логин или пароль")
+        return
 
     driver.diary_is_open()
     parcipiant_id = driver.get_phpsessid()
     driver.open_diary()
     parcipiant_id = driver.get_participant_id()
-    await second_bot.send_message(user.telegram_id,
+    second_bot.send_message(user.telegram_id,
                                   text=parcipiant_id)
     await state.clear()
 
 
-def wrap_async_func(user, state):
-    return asyncio.run(authorize_gosuslugi(user, state))
+def wrap_async_func(user: User, state: FSMContext):
+    try:
+        asyncio.run(authorize_gosuslugi(user, state))
+    except Exception:
+        second_bot.send_message(user.telegram_id,
+                                "Похоже во время авторизации что-то пошло не так :(")
 
 
 @router.callback_query(F.data == "yes_correct_data")
@@ -165,6 +169,11 @@ async def correct_data(callback: types.CallbackQuery,
 @router.message(SignUp.oauth2)
 async def oauth2(message: Message,
                  state: FSMContext):
+    if not _is_correct_oauth2(message):
+        second_bot.send_message(message.chat.id,
+                                await render_template("incorrect_data.j2", {"field": "код двухфакторной аутентификации"}))
+        return
+
     await state.update_data(oauth2=message.text.lower())
 
 
@@ -189,6 +198,14 @@ async def password_incorrect(callback: types.CallbackQuery,
     await callback.message.delete()
     await _set_password_state_with_message(callback.message, state)
     await callback.answer()
+
+
+def _is_correct_oauth2(message: Message) -> bool:
+    if not _message_is_text(message):
+        return False
+    
+    oauth2: str = message.text
+    return bool(re.match(OAUTH2_REGEX, oauth2))
 
 
 def _is_correct_login(message: Message) -> bool:
@@ -222,23 +239,23 @@ async def _set_password_state_with_message(message: Message,
 
 
 async def _get_anomaly_code_and_send_message(
-        user: User, state: FSMContext, anomaly: str | None = None) -> str:
+        user: User, state: FSMContext) -> str:
     """
     Отправляет сообщение с обнаружением аномалии и ставит на ожидание получение кода.
     :param user User: пользователь, проходящий регистрацию.
     :param state FSMContext
     :param anomaly str | None: обнаруженная аномалия. Если None - значит фото аномалия.
     """
-    await second_bot.send_message(
+    second_bot.send_message(
             user.telegram_id,
-            await render_template("captcha.j2", {"captcha": anomaly}))
+            await render_template("captcha.j2"))
 
-    if not anomaly:
-        path_to_code = f"{BASE_DIR}/temp/{user.telegram_id}.png"
-        await second_bot.send_photo(
+    path_to_code = f"{BASE_DIR}/temp/{user.telegram_id}.png"
+    with open(path_to_code, "rb") as f:
+        second_bot.send_photo(
                 chat_id=user.telegram_id,
-                photo=FSInputFile(path_to_code))
-        delete_file(path_to_code)
+                photo=f)
+    delete_file(path_to_code)
 
     await state.set_state(SignUp.anomaly)
     return await get_code(state, "anomaly")
@@ -252,9 +269,8 @@ async def _get_oauth2_code_and_send_message(
     :param user User: пользователь, проходящий регистрацию.
     :param state FSMContext
     """
-    await second_bot.send_message(
+    second_bot.send_message(
             user.telegram_id,
             text=await render_template("oauth2.j2"))
-
     await state.set_state(SignUp.oauth2)
     return await get_code(state, "oauth2")

@@ -29,12 +29,14 @@ class GosUslugiSearchLocators:
     "Кнопка пропуска подключения входа с подтверждением."
     LOCATOR_OF_ANOMALY_PHOTO_INPUT_FIELD = (By.XPATH, "//input[@type='text']")
     "Поле ввода кода фото капчи."
-    LOCATOR_OF_ANOMALY_TEXT_INPUT_FIELD = (By.CLASS_NAME, "input__field")
+    LOCATOR_OF_ANOMALY_TEXT_INPUT_FIELD = (By.XPATH, "//input[@class='input__field']")
     "Поле ввод кода текстовой капчи."
     LOCATOR_OF_ANOMALY_PHOTO_BUTTON = (By.XPATH, "//button[@class='code-entry__button button']")
     "Кнопка подтверждения фото капчи."
     LOCATOR_OF_ANOMALY_TEXT_BUTTON = (By.XPATH, "//button[@class='input__button anomaly__button']")
     "Кнопка подтверждения текстовой капчи."
+    LOCATOR_OF_OAUTH2_ANOMALY = (By.XPATH, "//div[@class='error-label mt-4 mb-4']")
+    "Класс ошибки при неправильном вводе кода двухфакторной аутентификации."
     LOCATOR_OF_ANOMALY_CLASS = (By.CLASS_NAME, "anomaly")
     "Класс аномалий."
     LOCATOR_OF_IMAGE_CAPTCHA = (By.CLASS_NAME, "esia-captcha__image")
@@ -112,19 +114,27 @@ class SearchHelper(BasePage):
         "Решает текстовую каптчу."
         self.find_element(GosUslugiSearchLocators.LOCATOR_OF_ANOMALY_TEXT_INPUT_FIELD).send_keys(code)
         self.find_element(GosUslugiSearchLocators.LOCATOR_OF_ANOMALY_TEXT_BUTTON).click()
+    
+    def check_oauth2_error(self):
+        "Проверяет, что код OAUTH2 введен корректно."
+        try:
+            self.find_element(GosUslugiSearchLocators.LOCATOR_OF_OAUTH2_ANOMALY, time=1)
+            return True
+        except TimeoutException:
+            return False
 
     def check_anomaly(self, telegram_id: int):
         "Проверяет на наличие аномалий при авторизации."
-        soup = BeautifulSoup(self.driver.page_source, "html.parser")
-        result = soup.find("div", {"class": "anomaly"})
-        if result:
+        try:
+            self.find_element(GosUslugiSearchLocators.LOCATOR_OF_ANOMALY_CLASS, time=2)
             try:
                 self.find_element(GosUslugiSearchLocators.LOCATOR_OF_IMAGE_CAPTCHA, time=2).screenshot(f"{BASE_DIR}/temp/{telegram_id}.png")
-                return True
+                return "PHOTO_CAPTCHA"
             except TimeoutException:
-                captcha_anomaly = self.find_element(GosUslugiSearchLocators.LOCATOR_OF_TEXT_CAPTCHA, time=2).text
-                return captcha_anomaly
-        return False
+                self.find_element(GosUslugiSearchLocators.LOCATOR_OF_TEXT_CAPTCHA, time=2).screenshot(f"{BASE_DIR}/temp/{telegram_id}.png")
+                return "TEXT_CAPTCHA"
+        except TimeoutException:
+            return False
 
 
     def _get_curent_cookie(self, name_cookie: str):
