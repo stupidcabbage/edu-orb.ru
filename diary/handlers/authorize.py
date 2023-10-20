@@ -2,12 +2,14 @@ import asyncio
 import re
 import threading
 import time
+import datetime
 
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import ContentType, FSInputFile, Message
-from pydantic import Extra
+from aiogram.types import ContentType, Message
+
+from emoji import EMOJI_DATA
 
 from diary.config import BASE_DIR, second_bot
 from diary.handlers.keyboards import SIGNUP_CORRECT_KEYBOARD
@@ -33,8 +35,8 @@ class SignUp(StatesGroup):
 async def signup(callback: types.CallbackQuery,
                  state: FSMContext):
     if not (await state.get_data()).get("password"):
-        await callback.message.answer(await render_template("signup.j2"))
-
+        await callback.message.edit_text(await render_template("signup.j2"))
+    
     await callback.message.answer(await render_template("login.j2"))
     await state.set_state(SignUp.login)
     await callback.answer()
@@ -61,21 +63,24 @@ async def get_login(message: Message,
 @router.message(SignUp.password)
 async def get_password(message: Message,
                        state: FSMContext):
-    if not _message_is_text(message):
+    if not _is_correct_password(message):
         await message.answer(await render_template(
             "incorrect_data.j2", {"field": "пароль"}))
         return
+
     await state.update_data(password=message.text)
     await _check_correctness_of_data(state, message)
 
 
-async def get_code(state: FSMContext,
-                   data: str):
-    while True:
+async def get_code(state: FSMContext, data: str):
+    time_end = (datetime.datetime.now() + datetime.timedelta(minutes=3)).strftime("%H:%M")
+
+    while time_end != datetime.datetime.now().strftime("%H:%M"):
         value = (await state.get_data()).get(data)
         if value:
             return value
         time.sleep(5)
+    return None
 
 
 async def restart_authorize(user: User,
@@ -102,17 +107,29 @@ async def authorize_gosuslugi(user: User,
         return
 
     anomaly = driver.check_anomaly(user.telegram_id)
-    if anomaly == "TEXT_CAPTCHA":
+    if anomaly:
         code = await _get_anomaly_code_and_send_message(user, state)
-        driver.fix_captcha_anomaly(code)
+        if not code:
+            await restart_authorize(user,
+                                    state,
+                                    "Истекло время ожидания кода.")
+            return
 
-    elif anomaly == "PHOTO_CAPTCHA":
-        code = await _get_anomaly_code_and_send_message(user, state)
-        driver.fix_photo_anomaly(code)
+        if anomaly == "TEXT_CAPTCHA":
+            driver.fix_captcha_anomaly(code)
+        elif anomaly == "PHOTO_CAPTCHA":
+            driver.fix_photo_anomaly(code)
+
+
     elements = driver.user_has_oauth2()
 
     if elements:
         code = await _get_oauth2_code_and_send_message(user, state)
+        if not code:
+            await restart_authorize(user,
+                                    state,
+                                    "Истекло время ожидания кода.")
+            return
         driver.send_authenticator_code(code, elements)
     else:
         driver.skip_oauth2()
@@ -123,13 +140,18 @@ async def authorize_gosuslugi(user: User,
         return
 
     anomaly = driver.check_anomaly(user.telegram_id)
-    if anomaly == "TEXT_CAPTCHA":
+    if anomaly:
         code = await _get_anomaly_code_and_send_message(user, state)
-        driver.fix_captcha_anomaly(code)
+        if not code:
+            await restart_authorize(user,
+                                    state,
+                                    "Истекло время ожидания кода.")
+            return
 
-    elif anomaly == "PHOTO_CAPTCHA":
-        code = await _get_anomaly_code_and_send_message(user, state)
-        driver.fix_photo_anomaly(code)
+        if anomaly == "TEXT_CAPTCHA":
+            driver.fix_captcha_anomaly(code)
+        elif anomaly == "PHOTO_CAPTCHA":
+            driver.fix_photo_anomaly(code)
     
     if driver.authorize_not_success():
         await restart_authorize(user, state,
@@ -149,8 +171,8 @@ def wrap_async_func(user: User, state: FSMContext):
     try:
         asyncio.run(authorize_gosuslugi(user, state))
     except Exception:
-        second_bot.send_message(user.telegram_id,
-                                "Похоже во время авторизации что-то пошло не так :(")
+        asyncio.run(restart_authorize(user, state,
+                                      "Неизвестная проблема при авторизации."))
 
 
 @router.callback_query(F.data == "yes_correct_data")
@@ -180,6 +202,12 @@ async def oauth2(message: Message,
 @router.message(SignUp.anomaly)
 async def anomaly(message: Message,
                   state: FSMContext):
+    if not _is_correct_anomaly(message):
+        second_bot.send_message(
+                message.chat.id,
+                await render_template("incorrect_data.j2", {"field": "код"}))
+        return
+
     await state.update_data(anomaly=message.text.lower())
 
 
@@ -199,6 +227,12 @@ async def password_incorrect(callback: types.CallbackQuery,
     await _set_password_state_with_message(callback.message, state)
     await callback.answer()
 
+
+def _is_correct_password(message: Message) -> bool:
+    return _message_is_text(message)
+
+def _is_correct_anomaly(message: Message) -> bool:
+    return _message_is_text(message)
 
 def _is_correct_oauth2(message: Message) -> bool:
     if not _message_is_text(message):
@@ -229,7 +263,17 @@ async def _check_correctness_of_data(
 
 
 def _message_is_text(message: Message) -> bool:
-    return message.content_type is ContentType.TEXT
+    if not message.content_type is ContentType.TEXT:
+        return False
+    
+    if message.text in EMOJI_DATA:
+        return False
+
+    for letter in message.text:
+        if letter in EMOJI_DATA:
+            return False
+
+    return True
 
 
 async def _set_password_state_with_message(message: Message,
