@@ -4,11 +4,12 @@ from aiogram.types import Message
 from dateparser import parse
 
 from diary.api.diary import get_lessons
+from diary.middlewares.authorize import AuthorizeMiddleware
 from diary.services.user import test_user
 from diary.templates import render_template
 
 router = Router()
-
+router.message.middleware(AuthorizeMiddleware())
 
 def parse_date(date: str) -> str | None:
     parsed_date = parse(date,

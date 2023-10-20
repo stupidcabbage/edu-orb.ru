@@ -4,7 +4,6 @@ from pathlib import Path
 from aiogram import Bot
 from aiogram.enums import ParseMode
 from dotenv import load_dotenv
-
 from telebot import TeleBot
 
 load_dotenv()

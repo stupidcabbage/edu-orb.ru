@@ -1,24 +1,22 @@
 import asyncio
+import datetime
 import re
 import threading
 import time
-import datetime
 
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ContentType, Message
-
 from emoji import EMOJI_DATA
 
-from diary.config import BASE_DIR, second_bot
+from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
+                          PHONE_NUMBER_REGEX, SNILS_REGEX, second_bot)
 from diary.handlers.keyboards import SIGNUP_CORRECT_KEYBOARD
 from diary.selenium_parser.BasePages import SearchHelper
 from diary.services.files import delete_file
 from diary.services.user import User
 from diary.templates import render_template
-from diary.config import EMAIL_REGEX, PHONE_NUMBER_REGEX, SNILS_REGEX, OAUTH2_REGEX
-
 
 router = Router()
 
