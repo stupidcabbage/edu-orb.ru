@@ -1,8 +1,8 @@
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
-from diary.handlers.keyboards import SIGNUP_KEYBOARD_AIOGRAM
 
+from diary.handlers.keyboards import SIGNUP_KEYBOARD_AIOGRAM
 from diary.middlewares.authorize import AuthorizeMiddleware
 
 router = Router()

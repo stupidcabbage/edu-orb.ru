@@ -8,12 +8,12 @@ from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from emoji import EMOJI_DATA
-
 from telebot.types import ReplyKeyboardRemove as TReplyKeyboardRemove
 
 from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
                           PHONE_NUMBER_REGEX, SNILS_REGEX, second_bot)
-from diary.handlers.keyboards import CANCEL_KEYBOARD, SIGNUP_CORRECT_KEYBOARD, SIGNUP_KEYBOARD_TELEBOT
+from diary.handlers.keyboards import (CANCEL_KEYBOARD, SIGNUP_CORRECT_KEYBOARD,
+                                      SIGNUP_KEYBOARD_TELEBOT)
 from diary.middlewares.authorize import AuthorizeFilter
 from diary.selenium_parser.BasePages import SearchHelper
 from diary.services.files import delete_file
@@ -35,6 +35,7 @@ class SignUp(StatesGroup):
                        AuthorizeFilter())
 async def signup(callback: types.CallbackQuery,
                  state: FSMContext):
+    "Авторизация."
     if not (await state.get_data()).get("password"):
         await callback.message.edit_text(await render_template("signup.j2"))
     
@@ -46,6 +47,7 @@ async def signup(callback: types.CallbackQuery,
 @router.message(SignUp.login)
 async def get_login(message: types.Message,
                     state: FSMContext):
+    "Логин."
     if not _is_correct_login(message):
         await message.answer(await render_template(
             "incorrect_data.j2", {"field": "логин"}))
@@ -64,6 +66,7 @@ async def get_login(message: types.Message,
 @router.message(SignUp.password)
 async def get_password(message: types.Message,
                        state: FSMContext):
+    "Пароль."
     if not _is_correct_password(message):
         await message.answer(await render_template(
             "incorrect_data.j2", {"field": "пароль"}))
@@ -74,7 +77,8 @@ async def get_password(message: types.Message,
 
 
 async def get_code(state: FSMContext, data: str):
-    time_end = (datetime.datetime.now() + datetime.timedelta(seconds=5)).strftime("%H:%M")
+    "Запускает пойлинг с ожиданием кода подтверждения."
+    time_end = (datetime.datetime.now() + datetime.timedelta(minutes=5)).strftime("%H:%M")
 
     while time_end != datetime.datetime.now().strftime("%H:%M"):
         value = (await state.get_data()).get(data)
@@ -87,6 +91,7 @@ async def get_code(state: FSMContext, data: str):
 async def restart_authorize(user: User,
                             state: FSMContext,
                             error: str):
+    "Прекращение авторизации при некорректных появлении ошибок."
     second_bot.send_message(
             user.telegram_id,
             await render_template("incorrect_authorization.j2",
@@ -181,6 +186,7 @@ def wrap_async_func(user: User, state: FSMContext):
 @router.callback_query(F.data == "yes_correct_data")
 async def correct_data(callback: types.CallbackQuery,
                        state: FSMContext):
+    "Начало авторизации на гос услуги."
     user_data = await state.get_data()
     user = User(username=user_data["login"],
                 password=user_data["password"],
@@ -195,9 +201,11 @@ async def correct_data(callback: types.CallbackQuery,
 @router.message(SignUp.oauth2)
 async def oauth2(message: types.Message,
                  state: FSMContext):
+    "Код двухфакторной аутентификации."
     if not _is_correct_oauth2(message):
-        second_bot.send_message(message.chat.id,
-                                await render_template("incorrect_data.j2", {"field": "код двухфакторной аутентификации"}))
+        second_bot.send_message(
+                message.chat.id,
+                await render_template("incorrect_data.j2", {"field": "код двухфакторной аутентификации"}))
         return
 
     await state.update_data(oauth2=message.text.lower())
@@ -206,6 +214,7 @@ async def oauth2(message: types.Message,
 @router.message(SignUp.anomaly)
 async def anomaly(message: types.Message,
                   state: FSMContext):
+    "Аномалии."
     if not _is_correct_anomaly(message):
         second_bot.send_message(
                 message.chat.id,
@@ -218,6 +227,7 @@ async def anomaly(message: types.Message,
 @router.callback_query(F.data == "login_incorrect")
 async def login_incorrect(callback: types.CallbackQuery,
                           state: FSMContext):
+    "Перезапись логина на гос услугах при авторизации."
     await callback.message.delete()
     await callback.message.answer(await render_template("login.j2"))
     await callback.answer()
@@ -227,26 +237,31 @@ async def login_incorrect(callback: types.CallbackQuery,
 @router.callback_query(F.data == "password_incorrect")
 async def password_incorrect(callback: types.CallbackQuery,
                              state: FSMContext):
+    "Перезапись пароля на гос услугах при авторизации."
     await callback.message.delete()
     await _set_password_state_with_message(callback.message, state)
     await callback.answer()
 
 
 def _is_correct_password(message: types.Message) -> bool:
+    "Проверка пароля для авторизации на гос услугах."
     return _message_is_text(message)
 
 def _is_correct_anomaly(message: types.Message) -> bool:
+    "Проверка кода аномалий для подтверждения личности на гос услугах."
     return _message_is_text(message)
 
 def _is_correct_oauth2(message: types.Message) -> bool:
+    """Проверка кода двухфакторной аутентификации 
+    на гос услугах перед авторизацией."""
     if not _message_is_text(message):
         return False
     
-    oauth2: str = message.text
-    return bool(re.match(OAUTH2_REGEX, oauth2))
+    return bool(re.match(OAUTH2_REGEX, message.text))
 
 
 def _is_correct_login(message: types.Message) -> bool:
+    "Проверка логина пользователя на гос.услугах перед авторизацией."
     if not _message_is_text(message):
         return False
 
@@ -258,6 +273,7 @@ def _is_correct_login(message: types.Message) -> bool:
 
 async def _check_correctness_of_data(
         state: FSMContext, message: types.Message) -> None:
+    "Сообщение с просьбой для проверки правильности введеных данных."
 
     user_data = await state.get_data()
     await message.answer(
@@ -267,6 +283,10 @@ async def _check_correctness_of_data(
 
 
 def _message_is_text(message: types.Message) -> bool:
+    """
+    Проверяет, что сообщение состоит только из символов:
+    латинского алфавита / кириллицы / знаки препинания.
+    """
     if not message.content_type is types.ContentType.TEXT:
         return False
     
@@ -282,6 +302,7 @@ def _message_is_text(message: types.Message) -> bool:
 
 async def _set_password_state_with_message(message: types.Message,
                                           state: FSMContext):
+    "Отправляет сообщение для отправки пароля пользователем."
     await message.answer(await render_template("password.j2"),
                          reply_markup=CANCEL_KEYBOARD())
     await state.set_state(SignUp.password)
