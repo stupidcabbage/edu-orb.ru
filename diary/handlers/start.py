@@ -1,7 +1,7 @@
-from aiogram import Router, types
+from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from diary.handlers.keyboards import SIGNUP_KEYBOARD_AIOGRAM
 
 from diary.middlewares.authorize import AuthorizeMiddleware
 
@@ -12,11 +12,7 @@ router.message.middleware(AuthorizeMiddleware())
 @router.message(CommandStart())
 async def command_start(message: Message):
     if message.from_user.id != 11226590290:
-        builder = InlineKeyboardBuilder()
-        builder.add(types.InlineKeyboardButton(
-            text="🚪Зарегистрироваться",
-            callback_data="signup"))
         await message.answer("Привет, похоже ты здесь впервые!",
-                             reply_markup=builder.as_markup())
+                             reply_markup=SIGNUP_KEYBOARD_AIOGRAM())
         return
     await message.answer(f"Привет, хозяин!")

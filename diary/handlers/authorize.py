@@ -7,12 +7,14 @@ import time
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import ContentType, Message
 from emoji import EMOJI_DATA
+
+from telebot.types import ReplyKeyboardRemove as TReplyKeyboardRemove
 
 from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
                           PHONE_NUMBER_REGEX, SNILS_REGEX, second_bot)
-from diary.handlers.keyboards import SIGNUP_CORRECT_KEYBOARD
+from diary.handlers.keyboards import CANCEL_KEYBOARD, SIGNUP_CORRECT_KEYBOARD, SIGNUP_KEYBOARD_TELEBOT
+from diary.middlewares.authorize import AuthorizeFilter
 from diary.selenium_parser.BasePages import SearchHelper
 from diary.services.files import delete_file
 from diary.services.user import User
@@ -29,19 +31,20 @@ class SignUp(StatesGroup):
     oauth2 = State()
 
 
-@router.callback_query(F.data == "signup")
+@router.callback_query(F.data == "signup",
+                       AuthorizeFilter())
 async def signup(callback: types.CallbackQuery,
                  state: FSMContext):
     if not (await state.get_data()).get("password"):
         await callback.message.edit_text(await render_template("signup.j2"))
     
-    await callback.message.answer(await render_template("login.j2"))
+    await callback.message.answer(await render_template("login.j2"),
+                                  reply_markup=CANCEL_KEYBOARD())
     await state.set_state(SignUp.login)
-    await callback.answer()
 
 
 @router.message(SignUp.login)
-async def get_login(message: Message,
+async def get_login(message: types.Message,
                     state: FSMContext):
     if not _is_correct_login(message):
         await message.answer(await render_template(
@@ -59,7 +62,7 @@ async def get_login(message: Message,
 
 
 @router.message(SignUp.password)
-async def get_password(message: Message,
+async def get_password(message: types.Message,
                        state: FSMContext):
     if not _is_correct_password(message):
         await message.answer(await render_template(
@@ -71,7 +74,7 @@ async def get_password(message: Message,
 
 
 async def get_code(state: FSMContext, data: str):
-    time_end = (datetime.datetime.now() + datetime.timedelta(minutes=3)).strftime("%H:%M")
+    time_end = (datetime.datetime.now() + datetime.timedelta(seconds=5)).strftime("%H:%M")
 
     while time_end != datetime.datetime.now().strftime("%H:%M"):
         value = (await state.get_data()).get(data)
@@ -87,7 +90,8 @@ async def restart_authorize(user: User,
     second_bot.send_message(
             user.telegram_id,
             await render_template("incorrect_authorization.j2",
-                                  {"error": error}))
+                                  {"error": error}),
+            reply_markup=SIGNUP_KEYBOARD_TELEBOT())
     await state.clear()
 
 
@@ -161,7 +165,8 @@ async def authorize_gosuslugi(user: User,
     driver.open_diary()
     parcipiant_id = driver.get_participant_id()
     second_bot.send_message(user.telegram_id,
-                                  text=parcipiant_id)
+                            text=parcipiant_id,
+                            reply_markup=TReplyKeyboardRemove())
     await state.clear()
 
 
@@ -180,6 +185,7 @@ async def correct_data(callback: types.CallbackQuery,
     user = User(username=user_data["login"],
                 password=user_data["password"],
                 telegram_id=callback.message.chat.id)
+
     await callback.message.edit_text(f"Пытаюсь войти...")
     _thread = threading.Thread(target=wrap_async_func, args=(user, state))
     _thread.start()
@@ -187,7 +193,7 @@ async def correct_data(callback: types.CallbackQuery,
 
 
 @router.message(SignUp.oauth2)
-async def oauth2(message: Message,
+async def oauth2(message: types.Message,
                  state: FSMContext):
     if not _is_correct_oauth2(message):
         second_bot.send_message(message.chat.id,
@@ -198,7 +204,7 @@ async def oauth2(message: Message,
 
 
 @router.message(SignUp.anomaly)
-async def anomaly(message: Message,
+async def anomaly(message: types.Message,
                   state: FSMContext):
     if not _is_correct_anomaly(message):
         second_bot.send_message(
@@ -226,13 +232,13 @@ async def password_incorrect(callback: types.CallbackQuery,
     await callback.answer()
 
 
-def _is_correct_password(message: Message) -> bool:
+def _is_correct_password(message: types.Message) -> bool:
     return _message_is_text(message)
 
-def _is_correct_anomaly(message: Message) -> bool:
+def _is_correct_anomaly(message: types.Message) -> bool:
     return _message_is_text(message)
 
-def _is_correct_oauth2(message: Message) -> bool:
+def _is_correct_oauth2(message: types.Message) -> bool:
     if not _message_is_text(message):
         return False
     
@@ -240,7 +246,7 @@ def _is_correct_oauth2(message: Message) -> bool:
     return bool(re.match(OAUTH2_REGEX, oauth2))
 
 
-def _is_correct_login(message: Message) -> bool:
+def _is_correct_login(message: types.Message) -> bool:
     if not _message_is_text(message):
         return False
 
@@ -251,7 +257,7 @@ def _is_correct_login(message: Message) -> bool:
 
 
 async def _check_correctness_of_data(
-        state: FSMContext, message: Message) -> None:
+        state: FSMContext, message: types.Message) -> None:
 
     user_data = await state.get_data()
     await message.answer(
@@ -260,8 +266,8 @@ async def _check_correctness_of_data(
     await state.set_state()
 
 
-def _message_is_text(message: Message) -> bool:
-    if not message.content_type is ContentType.TEXT:
+def _message_is_text(message: types.Message) -> bool:
+    if not message.content_type is types.ContentType.TEXT:
         return False
     
     if message.text in EMOJI_DATA:
@@ -274,9 +280,10 @@ def _message_is_text(message: Message) -> bool:
     return True
 
 
-async def _set_password_state_with_message(message: Message,
+async def _set_password_state_with_message(message: types.Message,
                                           state: FSMContext):
-    await message.answer(await render_template("password.j2"))
+    await message.answer(await render_template("password.j2"),
+                         reply_markup=CANCEL_KEYBOARD())
     await state.set_state(SignUp.password)
 
 
