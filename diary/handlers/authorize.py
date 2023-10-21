@@ -36,7 +36,8 @@ class SignUp(StatesGroup):
 async def signup(callback: types.CallbackQuery,
                  state: FSMContext):
     "Авторизация."
-    if not (await state.get_data()).get("password"):
+    password = (await state.get_data()).get("password")
+    if not password:
         await callback.message.edit_text(await render_template("signup.j2"))
     
     await callback.message.answer(await render_template("login.j2"),
@@ -54,9 +55,9 @@ async def get_login(message: types.Message,
         return
 
     await state.update_data(login=message.text)
-    user_data = await state.get_data()
+    password = (await state.get_data()).get("password")
 
-    if not user_data.get("password"):
+    if not password:
         await _set_password_state_with_message(message, state)
         return
     
@@ -76,7 +77,7 @@ async def get_password(message: types.Message,
     await _check_correctness_of_data(state, message)
 
 
-async def get_code(state: FSMContext, data: str):
+async def run_code_poiling(state: FSMContext, data: str):
     "Запускает пойлинг с ожиданием кода подтверждения."
     time_end = (datetime.datetime.now() + datetime.timedelta(minutes=5)).strftime("%H:%M")
 
@@ -328,7 +329,7 @@ async def _get_anomaly_code_and_send_message(
     delete_file(path_to_code)
 
     await state.set_state(SignUp.anomaly)
-    return await get_code(state, "anomaly")
+    return await run_code_poiling(state, "anomaly")
 
 
 async def _get_oauth2_code_and_send_message(
@@ -343,4 +344,4 @@ async def _get_oauth2_code_and_send_message(
             user.telegram_id,
             text=await render_template("oauth2.j2"))
     await state.set_state(SignUp.oauth2)
-    return await get_code(state, "oauth2")
+    return await run_code_poiling(state, "oauth2")
