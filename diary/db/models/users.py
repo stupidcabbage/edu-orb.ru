@@ -6,7 +6,15 @@ from db.base import Base
 
 
 class User(Base):
-    "Модель пользователя"
+    """
+    Модель пользователя.
+
+    :param telegram_id int: Уникальный telegram_id пользователя.
+    :param phpsessid Optional[str]: Cookie пользователя для входа.
+    :param parcipiants_id: List["ParcipiantsID"]: Уникальные айди пользователей на сайте дневника.
+    :param created_at datetime: Дата первого отправленного сообщения в бота.
+    :param is_admin bool: Является ли пользователем администратором.
+    """
     __tablename__ = "user_account"
     
     telegram_id: Mapped[int] = mapped_column(primary_key=True,
@@ -26,7 +34,13 @@ class User(Base):
 
 
 class ParcipiantsID(Base):
-    "Уникальные айди пользователей на сайте дневника."
+    """
+    Уникальные айди пользователей на сайте дневника.
+        
+    :param parcipiant_id str: Уникальный айди пользователя на сайте дневника для получения данных.
+    :param is_current bool: Статус использования данного ID прямо сейчас.
+    :param user_id int: Telegram ID пользователя, владеющим данным parcipiant_id.
+    """
     __tablename__ = "parcipiants_id"
     
     parcipiant_id: Mapped[str] = mapped_column(primary_key=True)
