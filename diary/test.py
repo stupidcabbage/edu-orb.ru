@@ -4,7 +4,7 @@ from sqlalchemy.exc import DBAPIError, IntegrityError
 
 from db.models.users import User, ParcipiantsID
 from sqlalchemy.orm import Session
-from db.base import Base
+from db.models import Base
 
 meta = Base.metadata
 
@@ -44,13 +44,14 @@ def create_user(**kwargs) -> None:
     except DBAPIError as error:
         print(f"Ошибка при добавлении: {error}")
 
+
 def get_user(telegram_id: int) -> User | None:
     stmt = select(User).where(User.telegram_id == telegram_id)
     return session.scalar(stmt)
 
 
 def main():
-    init_models()
+    # init_models()
 
     parcipiant_id=[ParcipiantsID(parcipiant_id="asdasd")]
 
