@@ -1,8 +1,19 @@
 from datetime import datetime
 from typing import List, Optional
+
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from db.models.base import Base
+
+from diary.db.models import Base
+from dataclasses import dataclass
+
+
+@dataclass
+class AuthorizeUser:
+    "Класс пользователя для авторизации"
+    username: str
+    password: str
+    telegram_id: int
 
 
 class User(Base):

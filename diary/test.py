@@ -1,10 +1,11 @@
-from typing import Optional, Callable
-from sqlalchemy import create_engine, select
-from sqlalchemy.exc import DBAPIError, IntegrityError
+from typing import Callable, Optional
 
-from db.models.users import User, ParcipiantsID
+from sqlalchemy import create_engine, select
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
+
 from db.models import Base
+from db.models.users import ParcipiantsID, User
 
 meta = Base.metadata
 
@@ -23,7 +24,6 @@ class FieldDoesNotExists(Exception):
 
     def __str__(self):
         return f"Данного поля не существует в классе {self.class_name}"
-
 
 def init_models() -> None:
     "Создание всех моделей."
@@ -60,9 +60,10 @@ def main():
 
 
 
-if __name__ == "__main__":
-    main()
-
+# if __name__ == "__main__":
+#     main()
+user = User(telegram_id=123)
+print(user.telegram_id)
 
 # User.metadata.create_all(engine)
 # ParcipiantsID.metadata.create_all(engine)

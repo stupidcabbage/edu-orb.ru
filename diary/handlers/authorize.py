@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import os
 import re
 import threading
 import time
@@ -12,12 +13,12 @@ from telebot.types import ReplyKeyboardRemove as TReplyKeyboardRemove
 
 from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
                           PHONE_NUMBER_REGEX, SNILS_REGEX, second_bot)
+from diary.db.models import AuthorizeUser
 from diary.handlers.keyboards import (CANCEL_KEYBOARD, SIGNUP_CORRECT_KEYBOARD,
                                       SIGNUP_KEYBOARD_TELEBOT)
 from diary.middlewares.authorize import AuthorizeFilter
 from diary.selenium_parser.BasePages import SearchHelper
 from diary.services.files import delete_file
-from diary.services.user import User
 from diary.templates import render_template
 
 router = Router()
@@ -89,7 +90,7 @@ async def run_code_poiling(state: FSMContext, data: str):
     return None
 
 
-async def restart_authorize(user: User,
+async def restart_authorize(user: AuthorizeUser,
                             state: FSMContext,
                             error: str):
     "Прекращение авторизации при некорректных появлении ошибок."
@@ -101,7 +102,7 @@ async def restart_authorize(user: User,
     await state.clear()
 
 
-async def authorize_gosuslugi(user: User,
+async def authorize_gosuslugi(user: AuthorizeUser,
                               state: FSMContext):
     driver = SearchHelper()
     driver.go_to_diary_page()
@@ -176,7 +177,7 @@ async def authorize_gosuslugi(user: User,
     await state.clear()
 
 
-def wrap_async_func(user: User, state: FSMContext):
+def wrap_async_func(user: AuthorizeUser, state: FSMContext):
     try:
         asyncio.run(authorize_gosuslugi(user, state))
     except Exception:
@@ -189,7 +190,7 @@ async def correct_data(callback: types.CallbackQuery,
                        state: FSMContext):
     "Начало авторизации на гос услуги."
     user_data = await state.get_data()
-    user = User(username=user_data["login"],
+    user = AuthorizeUser(username=user_data["login"],
                 password=user_data["password"],
                 telegram_id=callback.message.chat.id)
 
@@ -310,10 +311,10 @@ async def _set_password_state_with_message(message: types.Message,
 
 
 async def _get_anomaly_code_and_send_message(
-        user: User, state: FSMContext) -> str:
+        user: AuthorizeUser, state: FSMContext) -> str:
     """
     Отправляет сообщение с обнаружением аномалии и ставит на ожидание получение кода.
-    :param user User: пользователь, проходящий регистрацию.
+    :param user AuthorizeUser: пользователь, проходящий регистрацию.
     :param state FSMContext
     :param anomaly str | None: обнаруженная аномалия. Если None - значит фото аномалия.
     """
@@ -321,23 +322,24 @@ async def _get_anomaly_code_and_send_message(
             user.telegram_id,
             await render_template("captcha.j2"))
 
-    path_to_code = f"{BASE_DIR}/temp/{user.telegram_id}.png"
-    with open(path_to_code, "rb") as f:
+    path_to_file = f"{BASE_DIR}/temp/{user.telegram_id}.png"
+    with open(path_to_file, "rb") as f:
         second_bot.send_photo(
                 chat_id=user.telegram_id,
                 photo=f)
-    delete_file(path_to_code)
+
+    os.remove(path_to_file)
 
     await state.set_state(SignUp.anomaly)
     return await run_code_poiling(state, "anomaly")
 
 
 async def _get_oauth2_code_and_send_message(
-        user: User,
+        user: AuthorizeUser,
         state: FSMContext) -> str:
     """
     Отправляет сообщение с обнаружением OAUTH2 и ставит на ожидание получение кода.
-    :param user User: пользователь, проходящий регистрацию.
+    :param user AuthorizeUser: пользователь, проходящий регистрацию.
     :param state FSMContext
     """
     second_bot.send_message(
