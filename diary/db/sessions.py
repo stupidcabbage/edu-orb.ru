@@ -14,6 +14,12 @@ class DBsession(object):
 
     def query(self, *entities, **kwargs):
         return self._session.query(*entities, **kwargs)
+    
+    def scalar(self, stmt):
+        return self._session.scalar(stmt)
+    
+    def scalars(self, stmt):
+        return self._session.scalars(stmt)
 
     def add_model(self, model: Base, need_flush: bool = False):
         self._session.add(model)

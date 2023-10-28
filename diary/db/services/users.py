@@ -1,4 +1,5 @@
 from loguru import logger
+from sqlalchemy import select
 from sqlalchemy.exc import DatabaseError, IntegrityError
 
 from diary.db.exceptions import FieldDoesNotExists
@@ -16,3 +17,8 @@ def add_user(session: DBsession, model: User, need_flush: bool = True):
     except DatabaseError as e:
         logger.warning(f"Не получилось создать пользователя: {e}")
         raise
+
+
+def get_user(session: DBsession, telegram_id: int):
+    stmt = select(User).where(User.telegram_id == telegram_id)
+    return session.scalar(stmt)

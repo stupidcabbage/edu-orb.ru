@@ -51,17 +51,16 @@ def get_user(telegram_id: int) -> User | None:
 
 
 def main():
-    # init_models()
+    init_models()
 
     parcipiant_id=[ParcipiantsID(parcipiant_id="asdasd")]
 
-    print(create_user(telegram_id=2))
     print(get_user(2))
 
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
 user = User(telegram_id=123)
 print(user.telegram_id)
 

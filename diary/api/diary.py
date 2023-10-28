@@ -58,9 +58,11 @@ async def get_diary_json(date: str, user: User) -> dict:
     :param date str: Дата начала в расписании (DD.MM.YYYY).
     :param user User: Пользователь, который делает запрос.
     """
+    cookies = {"PHPSESSID": f"{user.phpsessid}"}
+    parcipiant_id = user.parcipiants_id[0].parcipiant_id
     async with aiohttp.ClientSession(headers=HEADERS, 
-                                     cookies=user.cookies) as s:
-        async with s.get(f"https://de.edu.orb.ru/edv/index/diary/{user.parcipiant_id}?date={date}") as r:
+                                     cookies=cookies) as s:
+        async with s.get(f"https://de.edu.orb.ru/edv/index/diary/{parcipiant_id}?date={date}") as r:
             return await r.json()
 
 async def get_diary(user: User, date: str = get_tomorrow_date()) -> Diary | None:
