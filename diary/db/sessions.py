@@ -17,9 +17,11 @@ class DBsession(object):
 
     def add_model(self, model: Base, need_flush: bool = False):
         self._session.add(model)
+        logger.info("Создал модель")
         
         if need_flush:
             self._session.flush([model])
+            logger.info("flushed")
 
     def delete_model(self, model: Base):
         if model is None:

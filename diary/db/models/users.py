@@ -4,7 +4,7 @@ from typing import List, Optional
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from diary.db.models import Base
+from .base import Base
 from dataclasses import dataclass
 
 
@@ -27,7 +27,8 @@ class User(Base):
     :param is_admin bool: Является ли пользователем администратором.
     """
     __tablename__ = "user_account"
-    
+    __table_args__ = {'extend_existing': True}
+
     telegram_id: Mapped[int] = mapped_column(primary_key=True,
                                              unique=True)
     "Уникальный telegram_id пользователя."
@@ -53,7 +54,8 @@ class ParcipiantsID(Base):
     :param user_id int: Telegram ID пользователя, владеющим данным parcipiant_id.
     """
     __tablename__ = "parcipiants_id"
-    
+    __table_args__ = {'extend_existing': True}
+
     parcipiant_id: Mapped[str] = mapped_column(primary_key=True)
     "Уникальный айди пользователя на сайте дневника для получения данных."
     is_current: Mapped[bool] = mapped_column(default=True)

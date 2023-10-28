@@ -6,6 +6,13 @@ from aiogram.enums import ParseMode
 from dotenv import load_dotenv
 from telebot import TeleBot
 
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from diary.db.sessions import DBsession
+
+
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -24,3 +31,9 @@ SNILS_REGEX = r"^\d{1,3}(\s*\d{3})*$"
 OAUTH2_REGEX = r"^\d\d\d\d\d\d$"
 
 TEMPLATES_DIR = BASE_DIR / "templates"
+PATH_TO_DB = f"{BASE_DIR.parent}/db.sqlite3"
+
+
+engine = create_engine(f"sqlite+pysqlite:///{PATH_TO_DB}")
+session_factory = sessionmaker(bind=engine)
+db_session = DBsession(session_factory())

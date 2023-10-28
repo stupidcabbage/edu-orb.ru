@@ -3,9 +3,9 @@ from typing import Callable, Optional
 
 class FieldDoesNotExists(Exception):
     "Ошибка не существующего поля при создании записи."
-    def __init__(self, class_name: Optional[Callable] = None):
-        if class_name:
-            self.class_name = class_name.__name__
+    def __init__(self, object: Optional[Callable] = None):
+        if object:
+            self.class_name = object.__name__
         else:
             self.class_name = "Unknown"
 

@@ -6,6 +6,7 @@ import threading
 import time
 
 from aiogram import F, Router, types
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from emoji import EMOJI_DATA
@@ -14,12 +15,16 @@ from telebot.types import ReplyKeyboardRemove as TReplyKeyboardRemove
 from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
                           PHONE_NUMBER_REGEX, SNILS_REGEX, second_bot)
 from diary.db.models import AuthorizeUser
+from diary.db.models.users import ParcipiantsID, User
 from diary.handlers.keyboards import (CANCEL_KEYBOARD, SIGNUP_CORRECT_KEYBOARD,
                                       SIGNUP_KEYBOARD_TELEBOT)
 from diary.middlewares.authorize import AuthorizeFilter
 from diary.selenium_parser.BasePages import SearchHelper
-from diary.services.files import delete_file
 from diary.templates import render_template
+
+from diary.db.services.users import add_user 
+from diary.config import db_session
+
 
 router = Router()
 
@@ -30,6 +35,21 @@ class SignUp(StatesGroup):
     correct_data = State()
     anomaly = State()
     oauth2 = State()
+
+
+@router.message(Command("test"))
+async def test(message: types.Message):
+    db_user = User(telegram_id=message.chat.id,
+                   phpsessid="asd",
+                   parcipiants_id=[ParcipiantsID(parcipiant_id="ads",
+                                   user_id=message.chat.id)])
+    print(db_user)
+    try:
+        add_user(db_session, db_user)
+        db_session.commit_session(need_close=True)
+        print("success")
+    except Exception:
+        print("asd")
 
 
 @router.callback_query(F.data == "signup",
@@ -168,11 +188,23 @@ async def authorize_gosuslugi(user: AuthorizeUser,
         return
 
     driver.diary_is_open()
-    parcipiant_id = driver.get_phpsessid()
+    phpsessid = driver.get_phpsessid().get("value")
     driver.open_diary()
     parcipiant_id = driver.get_participant_id()
+    db_user = User(telegram_id=user.telegram_id,
+                   phpsessid=phpsessid,
+                   parcipiants_id=[ParcipiantsID(parcipiant_id=parcipiant_id,
+                                   user_id=user.telegram_id)])
+    print(db_user)
+    try:
+        add_user(db_session, db_user)
+        db_session.commit_session(need_close=True)
+    except Exception as e:
+        second_bot.send_message(user.telegram_id,
+                                text=f"{e}",
+                                reply_markup=TReplyKeyboardRemove())
     second_bot.send_message(user.telegram_id,
-                            text=parcipiant_id,
+                            text="Регистрация прошла успешно!",
                             reply_markup=TReplyKeyboardRemove())
     await state.clear()
 

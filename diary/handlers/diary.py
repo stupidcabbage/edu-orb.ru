@@ -5,13 +5,14 @@ from dateparser import parse
 
 from diary.api.diary import get_lessons
 from diary.middlewares.authorize import AuthorizeMiddleware
-from diary.services.n_user import test_user
+# from diary.services.n_user import test_user
 from diary.templates import render_template
 
 router = Router()
 router.message.middleware(AuthorizeMiddleware())
 
 
+test_user = None
 def parse_date(date: str) -> str | None:
     parsed_date = parse(date,
                         settings={"TIMEZONE": "Asia/Yekaterinburg",

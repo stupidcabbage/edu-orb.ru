@@ -3,10 +3,12 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from diary.config import PATH_TO_DB
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -25,6 +27,9 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+
+config.set_main_option("sqlalchemy.url", f"sqlite:///{PATH_TO_DB}")
 
 
 def run_migrations_offline() -> None:
@@ -72,7 +77,6 @@ def run_migrations_online() -> None:
         with context.begin_transaction():
             context.run_migrations()
 
-# config.set_main_option("sqlaclhemy.url", "sqlite:///db.sqlite3")
 
 if context.is_offline_mode():
     run_migrations_offline()
