@@ -1,84 +1,95 @@
-from typing import Callable, Optional
+import requests
+from bs4 import BeautifulSoup
 
-from sqlalchemy import create_engine, select
-from sqlalchemy.exc import DBAPIError
-from sqlalchemy.orm import Session
+from diary.db.models.users import ParcipiantsID
 
-from db.models import Base
-from db.models.users import ParcipiantsID, User
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0 (Edition Yx GX)"
+}
 
-meta = Base.metadata
+a = requests.get("https://de.edu.orb.ru/edv/index/participant", cookies={"PHPSESSID": f"624bb6f266a41bfe9a3a7394643e9610"}, headers=HEADERS)
 
-engine = create_engine("sqlite+pysqlite:///db.sqlite3")
-
-session = Session(engine)
-
-
-class FieldDoesNotExists(Exception):
-    "Ошибка не существующего поля при создании записи."
-    def __init__(self, class_name: Optional[Callable] = None):
-        if class_name:
-            self.class_name = class_name.__name__
-        else:
-            self.class_name = "Unknown"
-
-    def __str__(self):
-        return f"Данного поля не существует в классе {self.class_name}"
-
-def init_models() -> None:
-    "Создание всех моделей."
-    meta.create_all(engine)
+# print(a.text)
+soup = BeautifulSoup(a.text, "html.parser")
 
 
-def create_user(**kwargs) -> None:
-    "Создает модель пользователя в БД."
-    try:
-        user = User(**kwargs)
-    except TypeError:
-        raise FieldDoesNotExists(User)
-
-    try:
-        with session:
-            session.add(user)
-            session.commit()
-    except DBAPIError as error:
-        print(f"Ошибка при добавлении: {error}")
+def replace_empty_symbols(string: str):
+    return string.replace('\n', '').replace('  ', '')
 
 
-def get_user(telegram_id: int) -> User | None:
-    stmt = select(User).where(User.telegram_id == telegram_id)
-    return session.scalar(stmt)
-
-
-def main():
-    init_models()
-
-    parcipiant_id=[ParcipiantsID(parcipiant_id="asdasd")]
-
-    print(get_user(2))
-
-
-
-if __name__ == "__main__":
-    main()
-user = User(telegram_id=123)
-print(user.telegram_id)
-
-# User.metadata.create_all(engine)
-# ParcipiantsID.metadata.create_all(engine)
+# def get_participants(soup):
+# 	if soup.find_all('ul', id='participants'):
+# 		spisok_a = soup.find_all('ul', id='participants')[0].find_all('a')
+# 		participants=[]
+# 		for participant_html in spisok_a:
+# 			guid = participant_html.get('data-guid')
+# 			name = participant_html.find_all('div')[0].text
+# 			OO = participant_html.find_all('div')[1].text
 #
-# parcipiant_id=[ParcipiantsID(parcipiant_id="asdasd")]
-# user = User(telegram_id=1,
-#             parcipiants_id=parcipiant_id)
+# 			participants.append({'guid': guid,
+# 								'name': replace_empty_symbols(name),
+# 								'class': replace_empty_symbols(OO.split(',')[0]),
+# 								'school': replace_empty_symbols(OO.split(',')[1])})
+# 		return participants
+# 	else:
+# 		participants=[]
+# 		spisok_a = soup.find_all('div', 'one-participant')
+# 		name = spisok_a[0]
+# 		classs = spisok_a[1]
+# 		additional=''
+# 		school=spisok_a[2]
+# 		guid = soup.find_all('div', id='participant')[0]['data-guid']
+# 		participants.append({'guid':guid,
+# 							'name':name.replace('\n', '').replace('  ', ''),
+# 							'class':classs.replace('\n', '').replace('  ', ''),
+# 							'school':school.replace('\n', '').replace('  ', ''),
+# 							'additional':additional})
 #
-# with Session(engine) as session:
-#     session.add(user)
-#     session.commit()
-#
-#
-# session = Session(engine)
-#
-# stmt = select(User) 
-# print(stmt)
-# user = session.scalars(stmt).all()
-# print(user[0].parcipiants_id)
+# 		return participants
+
+def _make_parcipiant_model(user_id: int, parcipiant_id: str,
+                           name: str, grade: str, school: str) -> ParcipiantsID:
+    return ParcipiantsID(user_id=user_id,
+              parcipiant_id=parcipiant_id,
+              name=replace_empty_symbols(name),
+              grade=replace_empty_symbols(grade),
+              school=replace_empty_symbols(school))
+
+
+def _find_raw_parcipiants_id(soup) -> list:
+    return soup.find('ul', id='participants').find_all('a')
+
+
+def _find_raw_parcipiant_id(soup) -> list:
+    return soup.find('div', 'one-participant').text.split(',')
+
+
+def get_parcipiants():
+    a = requests.get("https://archive2021.edu.orb.ru/edv/index/participant",
+                     cookies={"PHPSESSID": f"2f929b31652717e963da453a7ef9575"},
+                     headers=HEADERS)
+
+    soup = BeautifulSoup(a.text, "html.parser")
+    participants=[]
+
+    if soup.find_all('ul', id='participants'):
+        raw_parcipiants_id = _find_raw_parcipiants_id(soup)
+        for participant_html in raw_parcipiants_id:
+            parcipiant_id = participant_html.get('data-guid')
+            name = participant_html.find('div').text
+            grade, school = participant_html.find_all('div')[1].text.split(",")
+
+            participants.append(_make_parcipiant_model(123, parcipiant_id,
+                                                       name, grade, school))
+        return participants
+
+    raw_parcipiants_id = _find_raw_parcipiant_id(soup)
+    parcipiant_id = soup.find('div', id='participant').get('data-guid')
+    name, grade, school = raw_parcipiants_id
+    participants.append(_make_parcipiant_model(123, parcipiant_id,
+                                               name, grade, school))
+
+    return participants
+
+print(get_parcipiants())
+

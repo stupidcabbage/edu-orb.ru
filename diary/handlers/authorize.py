@@ -10,6 +10,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from emoji import EMOJI_DATA
+from loguru import logger
 from telebot.types import ReplyKeyboardRemove as TReplyKeyboardRemove
 
 from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
@@ -25,6 +26,7 @@ from diary.templates import render_template
 from diary.db.services.users import add_user 
 from diary.config import db_session
 
+from diary.api.parcipiants import get_parcipiants
 
 router = Router()
 
@@ -35,21 +37,6 @@ class SignUp(StatesGroup):
     correct_data = State()
     anomaly = State()
     oauth2 = State()
-
-
-@router.message(Command("test"))
-async def test(message: types.Message):
-    db_user = User(telegram_id=message.chat.id,
-                   phpsessid="asd",
-                   parcipiants_id=[ParcipiantsID(parcipiant_id="ads",
-                                   user_id=message.chat.id)])
-    print(db_user)
-    try:
-        add_user(db_session, db_user)
-        db_session.commit_session(need_close=True)
-        print("success")
-    except Exception:
-        print("asd")
 
 
 @router.callback_query(F.data == "signup",
@@ -122,13 +109,12 @@ async def restart_authorize(user: AuthorizeUser,
     await state.clear()
 
 
-async def authorize_gosuslugi(user: AuthorizeUser,
+async def authorize_gosuslugi(driver: SearchHelper,
+                              user: AuthorizeUser,
                               state: FSMContext):
-    driver = SearchHelper()
     driver.go_to_diary_page()
     driver.go_to_gosuslugi_login_page()
     driver.authorize(user)
-
     if driver.authorize_not_success():
         await restart_authorize(user,
                                 state,
@@ -189,32 +175,41 @@ async def authorize_gosuslugi(user: AuthorizeUser,
 
     driver.diary_is_open()
     phpsessid = driver.get_phpsessid().get("value")
-    driver.open_diary()
-    parcipiant_id = driver.get_participant_id()
+    driver.driver.quit()
     db_user = User(telegram_id=user.telegram_id,
-                   phpsessid=phpsessid,
-                   parcipiants_id=[ParcipiantsID(parcipiant_id=parcipiant_id,
-                                   user_id=user.telegram_id)])
-    print(db_user)
+                   phpsessid=phpsessid)
+    parcipiant_id = await get_parcipiants(db_user)
+    db_user.parcipiants_id = parcipiant_id
     try:
-        add_user(db_session, db_user)
+        add_user(db_session, db_user, need_flush=False)
         db_session.commit_session(need_close=True)
     except Exception as e:
         second_bot.send_message(user.telegram_id,
                                 text=f"{e}",
                                 reply_markup=TReplyKeyboardRemove())
+    
+    if len(parcipiant_id) > 1:
+        second_bot.send_message(user.telegram_id,
+                                await render_template("chose_user.j2"))
+        await state.clear()
+        return
+
     second_bot.send_message(user.telegram_id,
-                            text="Регистрация прошла успешно!",
+                            await render_template("success_authorize.j2",
+                                                 {"user": "db_user"}),
                             reply_markup=TReplyKeyboardRemove())
     await state.clear()
 
 
 def wrap_async_func(user: AuthorizeUser, state: FSMContext):
+    driver = SearchHelper()
     try:
-        asyncio.run(authorize_gosuslugi(user, state))
-    except Exception:
+        asyncio.run(authorize_gosuslugi(driver, user, state))
+    except Exception as e:
+        logger.warning(e)
         asyncio.run(restart_authorize(user, state,
-                                      "Неизвестная проблема при авторизации."))
+                                      "Неизвестная ошибка при авторизации."))
+        driver.driver.quit()
 
 
 @router.callback_query(F.data == "yes_correct_data")

@@ -52,12 +52,21 @@ class ParcipiantsID(Base):
     :param parcipiant_id str: Уникальный айди пользователя на сайте дневника для получения данных.
     :param is_current bool: Статус использования данного ID прямо сейчас.
     :param user_id int: Telegram ID пользователя, владеющим данным parcipiant_id.
+    :param name str: Фамилия Имя Отчество
+    :param grade str: Класс учащегося.
+    :param school str: Школа учащегося.
     """
     __tablename__ = "parcipiants_id"
     __table_args__ = {'extend_existing': True}
 
     parcipiant_id: Mapped[str] = mapped_column(primary_key=True)
     "Уникальный айди пользователя на сайте дневника для получения данных."
+    name: Mapped[Optional[str]] = mapped_column()
+    "Фамилия Имя Отчество владельца айди"
+    grade: Mapped[Optional[str]] = mapped_column()
+    "Класс учащегося."
+    school: Mapped[Optional[str]] = mapped_column()
+    "Школа учащегося."
     is_current: Mapped[bool] = mapped_column(default=True)
     "Статус использования данного ID прямо сейчас"
 
@@ -66,4 +75,4 @@ class ParcipiantsID(Base):
     user: Mapped["User"] = relationship(back_populates="parcipiants_id")
 
     def __repr__(self) -> str:
-        return f"ID пользователя = {self.user_id!r} с parcipiant_id={self.parcipiant_id!r}, is_currect={self.is_current!r}"
+        return f"name={self.name!r} parcipiant_id={self.parcipiant_id!r}"

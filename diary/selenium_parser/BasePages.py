@@ -151,8 +151,6 @@ class SearchHelper(BasePage):
         except TimeoutException:
             return False
 
-        
-
     def get_phpsessid(self):
         "Возвращает PHPSESSID cookie."
         return self._get_curent_cookie("PHPSESSID")
