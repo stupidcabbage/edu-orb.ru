@@ -6,41 +6,30 @@ import threading
 import time
 
 from aiogram import F, Router, types
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
+from diary.api.parcipiants import get_parcipiants
+from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
+                          PHONE_NUMBER_REGEX, SNILS_REGEX, db_session,
+                          second_bot)
+from diary.db.models import AuthorizeUser
+from diary.db.models.users import ParcipiantsID, User
+from diary.db.services.users import add_user
+from diary.selenium_parser.BasePages import SearchHelper
+from diary.telegram.filters import AuthorizeFilter, IsAuthorizedFilter
+from diary.telegram.keyboards import (CANCEL_KEYBOARD, SIGNUP_CORRECT_KEYBOARD,
+                                      SIGNUP_KEYBOARD_TELEBOT)
+from diary.telegram.states import SignUp
+from diary.templates import render_template
 from emoji import EMOJI_DATA
 from loguru import logger
 from telebot.types import ReplyKeyboardRemove as TReplyKeyboardRemove
 
-from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
-                          PHONE_NUMBER_REGEX, SNILS_REGEX, second_bot)
-from diary.db.models import AuthorizeUser
-from diary.db.models.users import ParcipiantsID, User
-from diary.handlers.keyboards import (CANCEL_KEYBOARD, SIGNUP_CORRECT_KEYBOARD,
-                                      SIGNUP_KEYBOARD_TELEBOT)
-from diary.middlewares.authorize import AuthorizeFilter
-from diary.selenium_parser.BasePages import SearchHelper
-from diary.templates import render_template
-
-from diary.db.services.users import add_user 
-from diary.config import db_session
-
-from diary.api.parcipiants import get_parcipiants
-
 router = Router()
 
 
-class SignUp(StatesGroup):
-    login = State()
-    password = State()
-    correct_data = State()
-    anomaly = State()
-    oauth2 = State()
-
-
 @router.callback_query(F.data == "signup",
-                       AuthorizeFilter())
+                       AuthorizeFilter(),
+                       IsAuthorizedFilter())
 async def signup(callback: types.CallbackQuery,
                  state: FSMContext):
     "Авторизация."

@@ -1,8 +1,7 @@
+from diary.db.models import Base
 from loguru import logger
 from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm import Session
-
-from diary.db.models import Base
 
 
 class DBsession(object):

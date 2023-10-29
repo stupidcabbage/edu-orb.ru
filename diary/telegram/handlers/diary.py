@@ -2,13 +2,12 @@ from aiogram import Router
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message
 from dateparser import parse
-
 from diary.api.diary import get_lessons
-from diary.middlewares.authorize import AuthorizeMiddleware, IsAuthorizedMiddleware
-from diary.templates import render_template
-from diary.db.services.users import get_user
 from diary.config import db_session
-
+from diary.db.services.users import get_user
+from diary.telegram.middlewares.authorize import (AuthorizeMiddleware,
+                                         IsAuthorizedMiddleware)
+from diary.templates import render_template
 
 router = Router()
 router.message.middleware(AuthorizeMiddleware())

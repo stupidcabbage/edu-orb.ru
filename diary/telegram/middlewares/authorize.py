@@ -1,17 +1,14 @@
 from collections.abc import Awaitable, Callable
-from typing import Any, Dict, Union
+from typing import Any
 
 from aiogram import BaseMiddleware
-from aiogram.filters import BaseFilter
-from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message, TelegramObject
-
-from diary.db.services.users import get_user
+from aiogram.types import Message, TelegramObject
 from diary.config import db_session
-
+from diary.db.services.users import get_user
 
 
 class IsAuthorizedMiddleware(BaseMiddleware):
+    "Пользователь уже авторизован."
     async def __call__(
             self,
             handler: Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]],
@@ -23,16 +20,9 @@ class IsAuthorizedMiddleware(BaseMiddleware):
 
         return await handler(event, data)
 
-class AuthorizeFilter(BaseFilter):
-    async def __call__(self, callback: CallbackQuery, state: FSMContext) -> Union[bool, Dict[str, Any]]:
-        if await state.get_state():
-            await callback.answer("Ты проходишь авторизацию!",
-                                  show_alert=True)
-            return False
-        return True
-
 
 class AuthorizeMiddleware(BaseMiddleware):
+    "Пользователь проходит авторизацию."
     async def __call__(
             self,
             handler: Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]],

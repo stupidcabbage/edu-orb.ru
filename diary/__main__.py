@@ -3,9 +3,8 @@ import logging
 import sys
 
 from aiogram import Dispatcher
-
 from diary.config import bot
-from diary.handlers import authorize, cancel, diary, start
+from diary.telegram.handlers import authorize, cancel, diary, start
 
 HANDLERS = (diary.router, cancel.router, start.router, authorize.router)
 
