@@ -34,7 +34,8 @@ class User(Base):
     "Уникальный telegram_id пользователя."
     phpsessid: Mapped[Optional[str]] = mapped_column()
     "Cookie пользователя для входа."
-    parcipiants_id: Mapped[List["ParcipiantsID"]] = relationship(back_populates="user")
+    parcipiants_id: Mapped[List["ParcipiantsID"]] = relationship(back_populates="user",
+                                                                 order_by="desc(ParcipiantsID.is_current)")
     "Уникальные айди пользователей на сайте дневника."
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
     "Дата первого отправленного сообщения в бота."

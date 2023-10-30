@@ -14,7 +14,7 @@ def SIGNUP_KEYBOARD_TELEBOT():
 def SIGNUP_KEYBOARD_AIOGRAM():
     "Aiogram InlineKeyboard для регистрации."
     buttons = [[types.InlineKeyboardButton(
-            text="🚪Зарегистрироваться",
+            text="🚪Авторизоваться",
             callback_data="signup")]]
     keyboard = types.InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard

@@ -13,7 +13,7 @@ from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
                           second_bot)
 from diary.db.models import AuthorizeUser
 from diary.db.models.users import ParcipiantsID, User
-from diary.db.services.users import add_user
+from diary.db.services.users import add_user, get_user
 from diary.selenium_parser.BasePages import SearchHelper
 from diary.telegram.filters import AuthorizeFilter, IsAuthorizedFilter
 from diary.telegram.keyboards import (CANCEL_KEYBOARD, SIGNUP_CORRECT_KEYBOARD,
@@ -172,20 +172,19 @@ async def authorize_gosuslugi(driver: SearchHelper,
     try:
         add_user(db_session, db_user, need_flush=False)
         db_session.commit_session(need_close=True)
-    except Exception as e:
-        second_bot.send_message(user.telegram_id,
-                                text=f"{e}",
-                                reply_markup=TReplyKeyboardRemove())
-    
+    except Exception:
+        await restart_authorize(user, state,
+                                "Некорректное добавление пользователя.")
+        return
     if len(parcipiant_id) > 1:
         second_bot.send_message(user.telegram_id,
                                 await render_template("chose_user.j2"))
         await state.clear()
         return
-
+    db_user = get_user(db_session, user.telegram_id)
     second_bot.send_message(user.telegram_id,
                             await render_template("success_authorize.j2",
-                                                 {"user": "db_user"}),
+                                                 {"user": db_user.parcipiants_id[0].name}),
                             reply_markup=TReplyKeyboardRemove())
     await state.clear()
 

@@ -21,6 +21,8 @@ TOKEN = "5606704270:AAFOOtIVJX5PE7yDaAtggxXixld7Kmlxm1c"
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 second_bot = TeleBot(TOKEN, parse_mode="html")
 
+CURRENT_USER = 0
+
 EMAIL_REGEX = r"^\S+@\S+\.\S+$"
 PHONE_NUMBER_REGEX = r"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$"
 SNILS_REGEX = r"^\d{1,3}(\s*\d{3})*$"

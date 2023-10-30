@@ -5,6 +5,8 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message, TelegramObject
 from diary.config import db_session
 from diary.db.services.users import get_user
+from diary.telegram.keyboards.signup import SIGNUP_KEYBOARD_AIOGRAM
+from diary.templates import render_template
 
 
 class IsAuthorizedMiddleware(BaseMiddleware):
@@ -15,7 +17,8 @@ class IsAuthorizedMiddleware(BaseMiddleware):
             event: Message,
             data: dict[str, Any]) -> Any:
         if not get_user(db_session, event.chat.id):
-            await event.answer("Ты не авторизован!")
+            await event.answer(await render_template("unauthorized_middleware.j2"),
+                               reply_markup=SIGNUP_KEYBOARD_AIOGRAM())
             return
 
         return await handler(event, data)

@@ -52,6 +52,9 @@ class DBsession(object):
         if need_close:
             self.close_session()
 
+    def execute(self, stmt):
+        self._session.execute(stmt)
+
     def close_session(self):
         try:
             self._session.close()

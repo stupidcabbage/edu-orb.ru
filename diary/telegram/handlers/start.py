@@ -1,18 +1,23 @@
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
-from diary.config import db_session
+from diary.config import db_session, CURRENT_USER
 from diary.db.services.users import get_user
 from diary.telegram.keyboards import SIGNUP_KEYBOARD_AIOGRAM
+from diary.templates import render_template
+
 
 router = Router()
 
+
 @router.message(CommandStart())
 async def command_start(message: Message):
-    if not get_user(db_session, message.chat.id):
-        await message.answer("Привет, похоже ты здесь впервые!",
+    user = get_user(db_session, message.chat.id) 
+    if not user:
+        await message.answer(await render_template("unauthorized_start.j2"),
                              reply_markup=SIGNUP_KEYBOARD_AIOGRAM())
         return
 
-    await message.answer(f"Привет, хозяин!")
+    await message.answer(await render_template("authorized_start.j2",
+                                               {"user": user.parcipiants_id[CURRENT_USER].name}))
 

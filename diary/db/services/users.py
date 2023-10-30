@@ -1,3 +1,4 @@
+from typing import Optional
 from diary.db.exceptions import FieldDoesNotExists
 from diary.db.models import User
 from diary.db.sessions import DBsession
@@ -18,6 +19,6 @@ def add_user(session: DBsession, model: User, need_flush: bool = True):
         raise
 
 
-def get_user(session: DBsession, telegram_id: int):
+def get_user(session: DBsession, telegram_id: int) -> Optional[User]:
     stmt = select(User).where(User.telegram_id == telegram_id)
     return session.scalar(stmt)

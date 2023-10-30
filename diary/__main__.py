@@ -4,9 +4,9 @@ import sys
 
 from aiogram import Dispatcher
 from diary.config import bot
-from diary.telegram.handlers import authorize, cancel, diary, start
+from diary.telegram.handlers import authorize, cancel, diary, start, user
 
-HANDLERS = (diary.router, cancel.router, start.router, authorize.router)
+HANDLERS = (diary.router, cancel.router, start.router, authorize.router, user.router)
 
 dp = Dispatcher()
 
