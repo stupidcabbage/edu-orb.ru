@@ -1,21 +1,23 @@
-from aiogram import Router
+from aiogram import F, Router 
 from aiogram.filters import Command, CommandObject
-from aiogram.types import Message
+from aiogram.types import CallbackQuery, Message
 from dateparser import parse
 
 from diary.api.diary import get_lessons
 from diary.config import db_session
 from diary.db.services.users import get_user
 from diary.telegram.middlewares.authorize import (AuthorizeMiddleware,
-                                                  IsAuthorizedMiddleware)
+                                                  IsAuthorizedMiddleware,
+                                                  IsHasCurrentUser)
 from diary.templates import render_template
+
 
 router = Router()
 router.message.middleware(AuthorizeMiddleware())
 router.message.middleware(IsAuthorizedMiddleware())
+router.message.middleware(IsHasCurrentUser())
 
 
-test_user = None
 def parse_date(date: str) -> str | None:
     parsed_date = parse(date,
                         settings={"TIMEZONE": "Asia/Yekaterinburg",
@@ -26,10 +28,21 @@ def parse_date(date: str) -> str | None:
 
 
 @router.message(Command("diary"))
-async def get_tomorrow_lessons(message: Message,
-                               command: CommandObject) -> None:
+async def command_diary(message: Message,
+                        command: CommandObject) -> None:
+    await lessons(message, command)
+
+
+@router.callback_query(F.data == "diary")
+async def callback_diary(callback: CallbackQuery):
+    await lessons(callback.message)
+    await callback.answer()
+
+
+async def lessons(message: Message,
+                  command: CommandObject | None = None) -> None:
     user = get_user(db_session, message.chat.id)
-    if not command.args:
+    if not command or not command.args:
         diary = await get_lessons(user)
         if not diary:
             diary = await get_lessons(user,
@@ -42,7 +55,7 @@ async def get_tomorrow_lessons(message: Message,
 
         await message.answer(await render_template("diary.j2", {"diary": diary}))
         return 
-
+    
     date = parse_date(command.args)
     if not date:
         await message.answer("Время указано неправильно!")
