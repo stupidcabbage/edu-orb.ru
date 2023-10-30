@@ -3,6 +3,7 @@ from typing import Any, Dict, Union
 from aiogram.filters import BaseFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
+
 from diary.config import db_session
 from diary.db.services.users import get_user
 

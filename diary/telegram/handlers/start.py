@@ -1,11 +1,11 @@
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
-from diary.config import db_session, CURRENT_USER
+
+from diary.config import CURRENT_USER, db_session
 from diary.db.services.users import get_user
 from diary.telegram.keyboards import SIGNUP_KEYBOARD_AIOGRAM
 from diary.templates import render_template
-
 
 router = Router()
 

@@ -1,7 +1,8 @@
 from sqlalchemy import update
+
+from diary.config import db_session
 from diary.db.models.users import ParcipiantsID
 from diary.db.sessions import DBsession
-from diary.config import db_session
 
 
 def change_current_status(session: DBsession,

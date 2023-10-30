@@ -1,11 +1,12 @@
 from typing import Literal
 
-from diary.config import BASE_DIR
-from diary.db.models import AuthorizeUser as User
-from diary.selenium_parser.BaseApp import BasePage
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+
+from diary.config import BASE_DIR
+from diary.db.models import AuthorizeUser as User
+from diary.selenium_parser.BaseApp import BasePage
 
 
 class COOKIE_DOESNT_EXISTS(Exception):

@@ -1,12 +1,13 @@
 from aiogram import F, Router, types
 from aiogram.filters import Command
-from diary.db.services.parcipiants import change_user_current_status
-from diary.telegram.keyboards import MAKE_PARCIPIANT_KEYBOARD
-from diary.db.services.users import get_user
-from diary.telegram.middlewares import AuthorizeMiddleware, IsAuthorizedMiddleware
-from diary.config import db_session, CURRENT_USER
-from diary.templates import render_template
 
+from diary.config import CURRENT_USER, db_session
+from diary.db.services.parcipiants import change_user_current_status
+from diary.db.services.users import get_user
+from diary.telegram.keyboards import MAKE_PARCIPIANT_KEYBOARD
+from diary.telegram.middlewares import (AuthorizeMiddleware,
+                                        IsAuthorizedMiddleware)
+from diary.templates import render_template
 
 router = Router()
 router.message.middleware(IsAuthorizedMiddleware())

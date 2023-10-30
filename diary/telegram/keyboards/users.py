@@ -1,4 +1,5 @@
 from aiogram import types
+
 from diary.db.models import User
 
 

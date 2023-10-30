@@ -3,6 +3,7 @@ import logging
 import sys
 
 from aiogram import Dispatcher
+
 from diary.config import bot
 from diary.telegram.handlers import authorize, cancel, diary, start, user
 

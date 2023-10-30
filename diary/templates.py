@@ -1,5 +1,6 @@
-import diary.config as config
 import jinja2
+
+import diary.config as config
 
 
 async def render_template(template_name: str, data: dict | None= None) -> str:

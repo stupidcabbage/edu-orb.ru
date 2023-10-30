@@ -3,11 +3,12 @@ from pathlib import Path
 
 from aiogram import Bot
 from aiogram.enums import ParseMode
-from diary.db.sessions import DBsession
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from telebot import TeleBot
+
+from diary.db.sessions import DBsession
 
 load_dotenv()
 

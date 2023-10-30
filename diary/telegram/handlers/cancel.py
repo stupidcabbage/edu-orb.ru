@@ -3,6 +3,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.types.message import Message
+
 from diary.telegram.handlers.authorize import SignUp
 from diary.templates import render_template
 

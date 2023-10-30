@@ -7,6 +7,10 @@ import time
 
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
+from emoji import EMOJI_DATA
+from loguru import logger
+from telebot.types import ReplyKeyboardRemove as TReplyKeyboardRemove
+
 from diary.api.parcipiants import get_parcipiants
 from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
                           PHONE_NUMBER_REGEX, SNILS_REGEX, db_session,
@@ -20,9 +24,6 @@ from diary.telegram.keyboards import (CANCEL_KEYBOARD, SIGNUP_CORRECT_KEYBOARD,
                                       SIGNUP_KEYBOARD_TELEBOT)
 from diary.telegram.states import SignUp
 from diary.templates import render_template
-from emoji import EMOJI_DATA
-from loguru import logger
-from telebot.types import ReplyKeyboardRemove as TReplyKeyboardRemove
 
 router = Router()
 

@@ -1,8 +1,9 @@
 import datetime
 
 import aiohttp
-from diary.db.models import User
 from pydantic import BaseModel
+
+from diary.db.models import User
 
 WEEKDAYS = ("Понедельник", "Вторник", "Среда",
             "Четверг", "Пятница", "Суббота", "Воскресенье")

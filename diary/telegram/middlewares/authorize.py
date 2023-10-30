@@ -3,6 +3,7 @@ from typing import Any
 
 from aiogram import BaseMiddleware
 from aiogram.types import Message, TelegramObject
+
 from diary.config import db_session
 from diary.db.services.users import get_user
 from diary.telegram.keyboards.signup import SIGNUP_KEYBOARD_AIOGRAM
