@@ -23,22 +23,13 @@ class DBsession(object):
 
     def add_model(self, model: Base, need_flush: bool = False):
         self._session.add(model)
-        logger.info("Создал модель")
+        logger.info(f"Created model: {model}")
         
         if need_flush:
             self._session.flush([model])
-            logger.info("flushed")
 
-    def delete_model(self, model: Base):
-        if model is None:
-            logger.warning(f"{__name__}: model is None")
-
-        try:
-            self._session.delete(model)
-        except IntegrityError as e:
-            logger.error(f"{__name__} {e}")
-        except DataError as e:
-            logger.error(f"{__name__} {e}")
+    def rollback(self):
+        self._session.rollback()
 
     def commit_session(self, need_close: bool = False):
         try:

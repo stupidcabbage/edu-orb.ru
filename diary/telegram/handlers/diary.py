@@ -1,4 +1,4 @@
-from aiogram import F, Router 
+from aiogram import F, Router
 from aiogram.filters import Command, CommandObject
 from aiogram.types import CallbackQuery, Message
 from dateparser import parse
@@ -6,16 +6,13 @@ from dateparser import parse
 from diary.api.diary import get_lessons
 from diary.config import db_session
 from diary.db.services.users import get_user
-from diary.telegram.middlewares.authorize import (AuthorizeMiddleware,
-                                                  IsAuthorizedMiddleware,
-                                                  IsHasCurrentUser)
+from diary.telegram.middlewares.authorize import (
+    AuthorizeMiddleware, IsAuthorizedAndHasCurrentUser)
 from diary.templates import render_template
-
 
 router = Router()
 router.message.middleware(AuthorizeMiddleware())
-router.message.middleware(IsAuthorizedMiddleware())
-router.message.middleware(IsHasCurrentUser())
+router.message.middleware(IsAuthorizedAndHasCurrentUser())
 
 
 def parse_date(date: str) -> str | None:

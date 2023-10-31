@@ -1,1 +1,2 @@
-from .authorize import AuthorizeMiddleware, IsAuthorizedMiddleware
+from .authorize import (AuthorizeMiddleware, IsAuthorizedAndHasCurrentUser,
+                        IsAuthorizedMiddleware, IsHasCurrentUser)

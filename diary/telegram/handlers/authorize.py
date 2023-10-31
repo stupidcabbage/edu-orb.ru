@@ -174,6 +174,7 @@ async def authorize_gosuslugi(driver: SearchHelper,
         add_user(db_session, db_user, need_flush=False)
         db_session.commit_session(need_close=True)
     except Exception:
+        db_session.rollback()
         await restart_authorize(user, state,
                                 "Некорректное добавление пользователя.")
         return
