@@ -16,7 +16,7 @@ from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
                           PHONE_NUMBER_REGEX, SNILS_REGEX, db_session,
                           second_bot)
 from diary.db.models import AuthorizeUser
-from diary.db.models.users import ParcipiantsID, User
+from diary.db.models.users import User
 from diary.db.services.users import add_user, get_user
 from diary.selenium_parser.BasePages import SearchHelper
 from diary.telegram.filters import AuthorizeFilter, IsAuthorizedFilter

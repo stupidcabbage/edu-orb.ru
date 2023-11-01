@@ -64,6 +64,7 @@ async def get_diary_json(date: str, user: User) -> dict:
         async with s.get(f"https://de.edu.orb.ru/edv/index/diary/{parcipiant_id}?date={date}") as r:
             return await r.json()
 
+
 async def get_diary(user: User, date: str = get_tomorrow_date()) -> Diary | None:
     """
     Возвращает расписание.
