@@ -1,0 +1,17 @@
+📊 <b>Ваши оценки:</b><br><br>
+{% for subject in marks %}
+<b>{{ subject.name }}</b>:<br>
+{% if subject.marks %}
+{% for i in range(subject.marks|length) %}
+{% if i == subject.marks|length -1 %}
+{{ subject.marks[i] }} 
+{% else %}
+{{ subject.marks[i] }}, 
+{% endif %}
+{% endfor %}
+{% else %}
+нет 
+{% endif %}
+(Средний балл: {{ subject.middle_marks }})
+{{ "😢" if subject.middle_marks < 3.5 else "" }}<br>
+{% endfor %}

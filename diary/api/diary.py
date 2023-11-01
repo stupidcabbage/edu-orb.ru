@@ -1,7 +1,9 @@
 import datetime
 
 import aiohttp
-from pydantic import BaseModel
+from loguru import logger
+from diary.api.classes import Diary, Lesson
+from diary.config import CURRENT_USER
 
 from diary.db.models import User
 
@@ -19,32 +21,6 @@ def get_tomorrow_date() -> str:
     return (datetime.datetime.today() + datetime.timedelta(days=1)).strftime("%d.%m.%Y")
 
 
-class PreviosHomewok(BaseModel):
-    date: str
-    homework: str
-
-
-class Lesson(BaseModel):
-    subject: str
-    teacher: str
-    date: str
-    marksRaw: list[int]
-    lessonNumber: int
-    lessonTime: str
-    homework: str | None
-    previousHomework: PreviosHomewok | None
-    topic: str | None
-
-
-class Data(BaseModel):
-    diary: dict[str, list[Lesson]]
-    edu_periods: list[dict]
-
-
-class Diary(BaseModel):
-    success: bool
-    message: str
-    data: Data
 
 
 HEADERS = {
@@ -58,7 +34,7 @@ async def get_diary_json(date: str, user: User) -> dict:
     :param user User: Пользователь, который делает запрос.
     """
     cookies = {"PHPSESSID": f"{user.phpsessid}"}
-    parcipiant_id = user.parcipiants_id[0].parcipiant_id
+    parcipiant_id = user.parcipiants_id[CURRENT_USER].parcipiant_id
     async with aiohttp.ClientSession(headers=HEADERS, 
                                      cookies=cookies) as s:
         async with s.get(f"https://de.edu.orb.ru/edv/index/diary/{parcipiant_id}?date={date}") as r:
@@ -74,7 +50,8 @@ async def get_diary(user: User, date: str = get_tomorrow_date()) -> Diary | None
     diary = await get_diary_json(date, user)
     try:
         return Diary.model_validate(diary)
-    except Exception:
+    except Exception as e:
+        logger.warning(f"Не удалось получить дневник: {e}")
         return None
 
 
@@ -87,6 +64,6 @@ async def get_lessons(user: User,
     :param user User: Пользователь, который делает запрос.
     """
     diary = await get_diary(user, date)
-    if not diary:
+    if not diary.data.diary:
         return None
     return diary.data.diary.get(get_weekday(date))

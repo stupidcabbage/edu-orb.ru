@@ -43,7 +43,7 @@ class SubjectMarks:
     :param illes Optional[int]: Количество пропусков по болезни.
     """
     name: Optional[str] = None
-    marks: Optional[tuple[int]] = None
+    marks: Optional[list[int]] = None
     middle_marks: Optional[float] = None
     noshow: Optional[int] = None
     passes: Optional[int] = None
@@ -51,7 +51,7 @@ class SubjectMarks:
         
     def _to_list(self, value) -> list[int] | None:
         if self._value_exists(value):
-            return tuple(map(int, value.split(", ")))
+            return list(map(int, value.split(", ")))
         return None
 
     def _to_int(self, value) -> Optional[int]:
