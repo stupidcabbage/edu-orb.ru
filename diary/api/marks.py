@@ -88,6 +88,7 @@ async def get_marks(date_begin: str, date_end: str, user: User) -> list[SubjectM
     html_text = await get_marks_html(date_begin, date_end, user)
     return await make_list_subjects(html_text)
 
+
 async def get_marks_html(date_begin: str, date_end: str, user: User):
     """
     Возвращает оценки в формате HTML.
