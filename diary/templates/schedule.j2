@@ -1,0 +1,4 @@
+Расписание на {{ diary[0].date }} 📆<br><br>
+{% for lesson in diary %}
+{{ lesson.lessonNumber }}. {{ lesson.subject }}<br>
+{% endfor %}
