@@ -1,15 +1,17 @@
-from aiogram import Router, types, F
+from aiogram import F, Router, types
 from aiogram.filters import Command
-from diary.api.schoolperiods import get_school_periods
-from diary.db.services.users import get_user
-from diary.config import db_session
-from diary.telegram.handlers.message import send_message
-from diary.telegram.keyboards.marks import MAKE_SCHOOL_PERIOD_KEYBOARD, MARKS_KEYBOARD, SchoolPeriodCallbackFactory
 
-from diary.telegram.middlewares import AuthorizeMiddleware, IsAuthorizedMiddleware
 from diary.api.marks import get_marks as gm
+from diary.api.schoolperiods import get_school_periods
+from diary.config import db_session
+from diary.db.services.users import get_user
+from diary.telegram.handlers.message import send_message
+from diary.telegram.keyboards.marks import (MAKE_SCHOOL_PERIOD_KEYBOARD,
+                                            MARKS_KEYBOARD,
+                                            SchoolPeriodCallbackFactory)
+from diary.telegram.middlewares import (AuthorizeMiddleware,
+                                        IsAuthorizedMiddleware)
 from diary.templates import render_template
-
 
 router = Router()
 router.message.middleware(AuthorizeMiddleware())
