@@ -6,10 +6,10 @@ from aiogram import Dispatcher
 
 from diary.config import bot
 from diary.telegram.handlers import (authorize, cancel, diary, start, user,
-                                     marks, schedule)
+                                     marks, schedule, help)
 
 HANDLERS = (diary.router, cancel.router, start.router, authorize.router,
-            user.router, marks.router, schedule.router)
+            user.router, marks.router, schedule.router, help.router)
 
 dp = Dispatcher()
 
