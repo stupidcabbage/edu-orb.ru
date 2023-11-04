@@ -3,12 +3,11 @@ from typing import Optional
 
 import aiohttp
 from loguru import logger
+
 from diary.api.classes import Diary, Lesson
 from diary.config import CURRENT_USER
-
 from diary.db.models import User
 from diary.services.time import format_date, format_date_with_weekday
-
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0 (Edition Yx GX)"

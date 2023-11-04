@@ -1,8 +1,8 @@
-import datetime 
+import datetime
 
 from diary.api.classes import SchoolPeriod
-from diary.db.models import User
 from diary.api.diary import get_diary
+from diary.db.models import User
 
 
 async def get_school_periods(user: User) -> list[SchoolPeriod]:

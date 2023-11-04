@@ -9,7 +9,6 @@ from diary.api.exceptions import ParcipiantNotFound, TableDoesntExists
 from diary.config import CURRENT_USER
 from diary.db.models import User
 
-
 ROW_VALUES = "td"
 "Строчки оценок"
 SUBJECTS_ROWS = 4
@@ -136,4 +135,3 @@ async def make_subject(row: Tag) -> SubjectMarks:
         setattr(subject, subject_field, column.text)
 
     return subject
-

@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 from typing import Union
+
+from aiogram import types
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram import types
 from loguru import logger
 
 from diary.services.time import format_date

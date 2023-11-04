@@ -1,5 +1,5 @@
 from aiogram import F, Router
-from aiogram.filters import Command, CommandObject
+from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 
 from diary.telegram.handlers.message import send_message
@@ -20,10 +20,8 @@ async def callback_help(callback: CallbackQuery):
     await callback.answer()
 
 
-
 async def get_help(message: Message,
                    is_callback: bool = False) -> None:
     await send_message(await render_template("help.j2"),
-                       message,
-                       is_callback,
+                       message, is_callback,
                        BACK_START_KEYBOARD())

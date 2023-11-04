@@ -1,18 +1,18 @@
 from datetime import datetime
+
 from aiogram import F, Router
 from aiogram.filters import Command, CommandObject
 from aiogram.types import CallbackQuery, Message
-from loguru import logger
 
 from diary.api.diary import get_lessons
-from diary.services.time import get_weekday_russian
 from diary.config import db_session
 from diary.db.models import User
 from diary.db.services.users import get_user
-from diary.services.time import DateNotCorrect, parse_date
-from diary.telegram.handlers.message import (send_diary, send_diary_message, send_message,
-                                             send_no_lessons)
-from diary.telegram.keyboards.diary import BACK_START_KEYBOARD, DiaryCallbackFactory
+from diary.services.time import DateNotCorrect, get_weekday_russian, parse_date
+from diary.telegram.handlers.message import (send_diary, send_diary_message,
+                                             send_message, send_no_lessons)
+from diary.telegram.keyboards.diary import (BACK_START_KEYBOARD,
+                                            DiaryCallbackFactory)
 from diary.telegram.middlewares import (AuthorizeMiddleware,
                                         IsAuthorizedAndHasCurrentUser)
 from diary.templates import render_template

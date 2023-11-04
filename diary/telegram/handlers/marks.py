@@ -36,8 +36,7 @@ async def _choose_period_marks(message: types.Message,
     user = get_user(db_session, message.chat.id)
     school_periods = await get_school_periods(user)
     await send_message(await render_template("chose_period.j2"),
-                       message,
-                       is_callback,
+                       message, is_callback,
                        MAKE_SCHOOL_PERIOD_KEYBOARD(school_periods))
 
 
@@ -51,4 +50,3 @@ async def get_marks(callback: types.CallbackQuery,
                                                            {"marks": marks}),
                                      reply_markup=MARKS_KEYBOARD())
     await callback.answer()
-    

@@ -1,7 +1,8 @@
 import datetime
-from dateparser import parse
-from diary.services.exceptions import DateNotCorrect
 
+from dateparser import parse
+
+from diary.services.exceptions import DateNotCorrect
 
 WEEKDAYS = ("Понедельник", "Вторник", "Среда",
             "Четверг", "Пятница", "Суббота", "Воскресенье")

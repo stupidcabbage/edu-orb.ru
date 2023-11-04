@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Optional, Union
 
 from aiogram.types import InlineKeyboardMarkup, Message
-from loguru import logger
 
 from diary.api.classes import Lesson
 from diary.api.diary import get_lessons
@@ -14,7 +13,6 @@ from diary.telegram.keyboards.diary import (MAKE_DAYS_KEYBOARD,
                                             DiaryCallbackFactory,
                                             ScheduleCallbackFactory)
 from diary.templates import render_template
-
 
 TEMPLATES_NAME = {
     ScheduleCallbackFactory: "schedule.j2",
