@@ -55,13 +55,9 @@ async def callback_diary(callback: CallbackQuery):
 async def pagination_lesson(callback: CallbackQuery,
                             callback_data: DiaryCallbackFactory):
     user: User = get_user(db_session, callback.message.chat.id)
-    logger.critical(callback_data.date)
     date = parse_date(callback_data.date)
-    logger.critical(date)
     diary = await get_lessons(user, date)
-    logger.critical(diary)
     if not diary:
-        logger.critical("No diary")
         await send_no_lessons(callback.message, date, DiaryCallbackFactory, True)
         return
 

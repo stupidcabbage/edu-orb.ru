@@ -50,9 +50,7 @@ async def send_no_lessons(message: Message,
                            date: datetime,
                            factory: Union[ScheduleCallbackFactory, DiaryCallbackFactory],
                            is_callback: bool = False):
-    logger.critical("No lessons")
     keyboard = MAKE_DAYS_KEYBOARD(date, factory)
-    logger.critical("created keyboard")
     await send_message(await render_template("nolessons.j2", {"date": format_date(date)}),
                        message,
                        is_callback,

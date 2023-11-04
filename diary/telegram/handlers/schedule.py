@@ -35,6 +35,7 @@ async def command_schedule(message: Message,
 
 @router.callback_query(F.data == "schedule")
 async def callback_schedule(callback: CallbackQuery):
+
     if get_weekday_russian(datetime.datetime.today()) in ("Суббота, Воскресенье"):
         await send_diary_message(callback.message, parse_date("Понедельник"),
                                  ScheduleCallbackFactory, True)
@@ -52,9 +53,10 @@ async def callback_schedule(callback: CallbackQuery):
 async def pagination_lesson(callback: CallbackQuery,
                             callback_data: ScheduleCallbackFactory):
     user: User = get_user(db_session, callback.message.chat.id)
-    diary = await get_lessons(user, callback_data.date)
     date = parse_date(callback_data.date)
+    diary = await get_lessons(user, date)
     if not diary:
         await send_no_lessons(callback.message, date, ScheduleCallbackFactory, True)
         return
+
     await send_diary(callback.message, diary, date, ScheduleCallbackFactory, True)
