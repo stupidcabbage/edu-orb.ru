@@ -2,14 +2,15 @@ from datetime import datetime
 from aiogram import F, Router
 from aiogram.filters import Command, CommandObject
 from aiogram.types import CallbackQuery, Message
+from loguru import logger
 
 from diary.api.diary import get_lessons
-from diary.services.time import get_weekday
+from diary.services.time import get_weekday_russian
 from diary.config import db_session
 from diary.db.models import User
 from diary.db.services.users import get_user
-from diary.services.time import DateNotCorrect, format_date, parse_date, parse_pagination_date
-from diary.telegram.handlers.message import (make_lesson_message, send_diary, send_diary_message, send_message,
+from diary.services.time import DateNotCorrect, parse_date
+from diary.telegram.handlers.message import (send_diary, send_diary_message, send_message,
                                              send_no_lessons)
 from diary.telegram.keyboards.diary import BACK_START_KEYBOARD, DiaryCallbackFactory
 from diary.telegram.middlewares import (AuthorizeMiddleware,
@@ -38,7 +39,7 @@ async def command_diary(message: Message,
 @router.callback_query(F.data == "diary")
 async def callback_diary(callback: CallbackQuery):
 
-    if get_weekday(datetime.today()) in ("Суббота, Воскресенье"):
+    if get_weekday_russian(datetime.today()) in ("Суббота, Воскресенье"):
         await send_diary_message(callback.message, parse_date("Понедельник"),
                                  DiaryCallbackFactory, True)
         await callback.answer()
@@ -54,9 +55,13 @@ async def callback_diary(callback: CallbackQuery):
 async def pagination_lesson(callback: CallbackQuery,
                             callback_data: DiaryCallbackFactory):
     user: User = get_user(db_session, callback.message.chat.id)
-    diary = await get_lessons(user, callback_data.date)
-    date = parse_pagination_date(callback_data.date)
+    logger.critical(callback_data.date)
+    date = parse_date(callback_data.date)
+    logger.critical(date)
+    diary = await get_lessons(user, date)
+    logger.critical(diary)
     if not diary:
+        logger.critical("No diary")
         await send_no_lessons(callback.message, date, DiaryCallbackFactory, True)
         return
 

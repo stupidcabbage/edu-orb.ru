@@ -123,6 +123,7 @@ async def make_list_subjects(html_text) -> list[SubjectMarks]:
 
     return subjects
 
+
 async def make_subject(row: Tag) -> SubjectMarks:
     "Возвращает объект класса SubjectMarks с полученных данных строки."
     row = row.find_all(ROW_VALUES)

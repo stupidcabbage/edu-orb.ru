@@ -1,3 +1,3 @@
-from diary.services.time import get_weekday
+from diary.services.time import parse_date
 
-print(get_weekday("02.10.2023"))
+print(parse_date("27.10.2023"))
