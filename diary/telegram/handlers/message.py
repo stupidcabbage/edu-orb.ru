@@ -100,7 +100,7 @@ async def make_lesson_message(message: Message,
 
 async def send_diary_message(message: Message, date: datetime, factory, is_callback: bool = False):
     user: User = get_user(db_session, message.chat.id)
-    diary = await get_lessons(user, date)
+    diary = await get_lessons(user, format_date(date))
     if not diary:
         await send_no_lessons(message, date, factory, is_callback)
         return

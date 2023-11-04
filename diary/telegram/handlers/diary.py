@@ -28,7 +28,7 @@ async def command_diary(message: Message,
     if command.args:
         try:
             date = parse_date(command.args)
-            await send_diary_message(message, date, DiaryCallbackFactory, True)
+            await send_diary_message(message, date, DiaryCallbackFactory, False)
 
         except DateNotCorrect:
             await send_message(await render_template("incorrect_date.j2"), message, False, BACK_START_KEYBOARD())
