@@ -1,20 +1,18 @@
-import aiohttp
 from bs4 import BeautifulSoup
 
 from diary.db.models.users import ParcipiantsID, User
+from diary.api.response import get_text_response
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0 (Edition Yx GX)"
-}
+
+async def get_index_parcipiant(user: User) -> str:
+    cookies = {"PHPSESSID": f"{user.phpsessid}"}
+    url = "https://de.edu.orb.ru/edv/index/participant"
+    response = await get_text_response(url, cookies)
+    return response
 
 
 async def get_parcipiants(user: User):
-    cookies = {"PHPSESSID": f"{user.phpsessid}"}
-    async with aiohttp.ClientSession(headers=HEADERS, 
-                                     cookies=cookies) as s:
-        response = await s.get("https://de.edu.orb.ru/edv/index/participant")
-        page_text = await response.text()
-
+    page_text = await get_index_parcipiant(user)
     soup = BeautifulSoup(page_text, "html.parser")
     participants=[]
 

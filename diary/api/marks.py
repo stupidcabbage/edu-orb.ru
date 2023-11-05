@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import Optional
 
-import aiohttp
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 from diary.api.exceptions import ParcipiantNotFound, TableDoesntExists
+from diary.api.response import get_response, get_text_response
 from diary.config import CURRENT_USER
 from diary.db.models import User
 
@@ -97,10 +97,8 @@ async def get_marks_html(date_begin: str, date_end: str, user: User):
     """
     cookies = {"PHPSESSID": f"{user.phpsessid}"}
     parcipiant_id = user.parcipiants_id[CURRENT_USER].parcipiant_id
-    async with aiohttp.ClientSession(headers=HEADERS, 
-                                     cookies=cookies) as s:
-        async with s.get(f"https://de.edu.orb.ru/edv/index/report/marks/{parcipiant_id}?begin={date_begin}&end={date_end}&format=html") as r:
-            return await r.text()
+    url = f"https://de.edu.orb.ru/edv/index/report/marks/{parcipiant_id}?begin={date_begin}&end={date_end}&format=html"
+    return await get_text_response(url, cookies)
 
 
 async def make_list_subjects(html_text) -> list[SubjectMarks]:
