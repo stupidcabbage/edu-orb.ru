@@ -15,7 +15,10 @@
 #### 1. Настройка переменных окружения
 Скопирутйте <code>.env_example</code> в <code>.env</code> и отредактируйте переменные окружения соответствующими данными.
 
-<code>cp .env.example .env</code><br>
+```
+cp .env.example .env
+```
+<br>
 #### 2. Установка зависимостей
 Для управления зависимостями используется [poetry](https://python-poetry.org/), требуется Python 3.11<br>
 
@@ -48,7 +51,7 @@ google-chrome --version
 ```
 
 <br>
-Переходим на сайт [ChromeDriver](https://chromedriver.chromium.org/downloads) и устанавливаем такую же стабильную версию, используя wget<br>
+Переходим на сайт [ChromeDriver](https://chromedriver.chromium.org/downloads/) и устанавливаем такую же стабильную версию, используя wget<br>
 
 ```
 wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.105/linux64/chromedriver-linux64.zip
@@ -71,7 +74,7 @@ sudo chmod +x /usr/bin/chromedriver
 Chrome и ChromeDriver установлен!<br>
 #### 4. Теперь создайте папку для временных файлов<br>
 
-```mkdir edu-orb.ru/temp```<br>
+```mkdir diary/temp```<br>
 
 Поздравляю, вы можете запускать бота.
 ```poetry run python3 -m diary```
