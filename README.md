@@ -19,7 +19,6 @@
 cp .env.example .env
 ```
 
-<br>
 #### 2. Установка зависимостей
 Для управления зависимостями используется [poetry](https://python-poetry.org/), требуется Python 3.11<br>
 
