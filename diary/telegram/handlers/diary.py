@@ -59,6 +59,8 @@ async def pagination_lesson(callback: CallbackQuery,
     diary = await get_lessons(user, date)
     if not diary:
         await send_no_lessons(callback.message, date, DiaryCallbackFactory, True)
+        await callback.answer()
         return
 
     await send_diary(callback.message, diary, date, DiaryCallbackFactory, True)
+    await callback.answer()
