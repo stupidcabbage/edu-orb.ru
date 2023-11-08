@@ -4,7 +4,6 @@
 
 ## <b>Команды бота</b>
 
-***
 * <code>/start</code> - Старт бота (Авторизация / Главное меню)<br>
 * <code>/help</code> - Справка<br>
 * <code>/diary <i>(Дата по необходимости в формате DD.MM.YYYY)</i></code> - Домашнее задание<br>
@@ -13,7 +12,6 @@
 
 
 ## Запуск 
-***
 #### 1. Настройка переменных окружения
 Скопирутйте <code>.env_example</code> в <code>.env</code> и отредактируйте переменные окружения соответствующими данными.
 
@@ -29,9 +27,16 @@ poetry install
 Для работы авторизации через гос.услуги используется [selenium](https://www.selenium.dev/), а именно Chrome + [ChromeDriver](https://googlechromelabs.github.io/chrome-for-testing/)
 
 Чтобы поставить Chrome необходимо получить DEB file, используя команду wget<br>
-```wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb```
-Теперь можно установить Chrome из DEB файла, используя [dpkg](https://help.ubuntu.ru/wiki/%D1%80%D1%83%D0%BA%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE_%D0%BF%D0%BE_ubuntu_server/%D1%83%D0%BF%D1%80%D0%B0%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BF%D0%B0%D0%BA%D0%B5%D1%82%D0%B0%D0%BC%D0%B8/dpkg)<br>
-```sudo dpkg -i google-chrome-stable_current_amd64.deb```
+
+```
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+```
+
+Теперь можно установить Chrome из DEB файла, используя [dpkg]<br>
+
+```
+sudo dpkg -i google-chrome-stable_current_amd64.deb
+```
 
 Теперь можно переходить к установке ChromeDriver
 
@@ -44,10 +49,17 @@ google-chrome --version
 
 <br>
 Переходим на сайт [ChromeDriver](https://chromedriver.chromium.org/downloads) и устанавливаем такую же стабильную версию, используя wget<br>
-```wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.105/linux64/chromedriver-linux64.zip```
+
+```
+wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.105/linux64/chromedriver-linux64.zip
+```
 
 Распакуйте архив<br>
-```unzip chromedriver-linux64.zip```<br>
+
+```
+unzip chromedriver-linux64.zip
+```
+<br>
 Затем введите команды ниже<br>
 
 ```
@@ -64,4 +76,3 @@ Chrome и ChromeDriver установлен!<br>
 Поздравляю, вы можете запускать бота.
 ```poetry run python3 -m diary```
 
-***
