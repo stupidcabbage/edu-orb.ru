@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 from diary.api.exceptions import ParcipiantNotFound, TableDoesntExists
-from diary.api.response import get_response, get_text_response
+from diary.api.response import get_text_response
 from diary.config import CURRENT_USER
 from diary.db.models import User
 
@@ -15,7 +15,7 @@ SUBJECTS_ROWS = 4
 "Значение, с которого начинают идти оценки."
 
 HEADERS = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0 (Edition Yx GX"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0 (Edition Yx GX"
 }
 
 COLUMNS = {

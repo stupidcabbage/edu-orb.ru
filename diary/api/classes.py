@@ -11,6 +11,7 @@ class Lesson(BaseModel):
     teacher: str
     date: str
     marksRaw: list[int]
+    absenceRaw: list[str]
     lessonNumber: int
     lessonTime: str
     homework: str | None

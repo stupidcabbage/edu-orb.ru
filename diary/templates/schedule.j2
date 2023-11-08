@@ -1,4 +1,28 @@
 Расписание на {{ diary[0].date }} 📆<br><br>
 {% for lesson in diary %}
-{{ lesson.lessonNumber }}. {{ lesson.subject }}<br>
+{{ lesson.lessonNumber }}. {{ lesson.subject }}
+{% if lesson.marksRaw[0] %}
+ | Оценка за урок: 
+
+{% for i in range(lesson.marksRaw|length) %}
+{% if i == lesson.marksRaw|length -1 %}
+{{ lesson.marksRaw[i] }} 
+{% else %}
+{{ lesson.marksRaw[i] }}, 
+{% endif %}
+{% endfor %}
+
+{% endif %}
+{% if lesson.absenceRaw[0] %}
+| <i>Посещение: 
+{% for i in range(lesson.absenceRaw|length) %}
+{% if i == lesson.absenceRaw|length -1 %}
+{{ lesson.absenceRaw[i] }} 
+{% else %}
+{{ lesson.absenceRaw[i] }}, 
+{% endif %}
+{% endfor %}
+ </i>
+{% endif %}
+<br>
 {% endfor %}
