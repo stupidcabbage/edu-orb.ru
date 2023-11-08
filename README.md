@@ -50,7 +50,6 @@ google-chrome --version
 > Google Chrome 119.0.6045.105
 ```
 
-<br>
 Переходим на сайт [ChromeDriver](https://chromedriver.chromium.org/downloads/) и устанавливаем такую же стабильную версию, используя wget<br>
 
 ```
