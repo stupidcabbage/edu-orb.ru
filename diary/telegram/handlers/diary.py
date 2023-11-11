@@ -34,6 +34,7 @@ async def command_diary(message: Message,
         except DateNotCorrect:
             await send_message(await render_template("incorrect_date.j2"), message, False, BACK_START_KEYBOARD())
             return
+    await send_diary_message(message, parse_date("Понедельник"), DiaryCallbackFactory, False)
 
 
 @router.callback_query(F.data == "diary")
