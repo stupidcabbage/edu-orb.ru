@@ -102,10 +102,12 @@ async def restart_authorize(user: AuthorizeUser,
 async def authorize_gosuslugi(driver: SearchHelper,
                               user: AuthorizeUser,
                               state: FSMContext):
+    logging.info(f"User: {user.telegram_id} have started authorization")
     driver.go_to_diary_page()
     driver.go_to_gosuslugi_login_page()
     driver.authorize(user)
     if driver.authorize_not_success():
+        logging.info(f"User: {user.telegram_id} wrote incorrect logging or password")
         await restart_authorize(user,
                                 state,
                                 "Введен неправильный логин или пароль.")
@@ -113,8 +115,10 @@ async def authorize_gosuslugi(driver: SearchHelper,
 
     anomaly = driver.check_anomaly(user.telegram_id)
     if anomaly:
+        logging.info(f"User: {user.telegram_id} found anomaly")
         code = await _get_anomaly_code_and_send_message(user, state)
         if not code:
+            logging.info(f"User: {user.telegram_id} waiting time exists.")
             await restart_authorize(user,
                                     state,
                                     "Истекло время ожидания кода.")
@@ -131,26 +135,32 @@ async def authorize_gosuslugi(driver: SearchHelper,
     if elements:
         code = await _get_oauth2_code_and_send_message(user, state)
         if not code:
+            logging.info(f"User: {user.telegram_id} waiting time exists.")
             await restart_authorize(user,
                                     state,
                                     "Истекло время ожидания кода.")
             return
         driver.send_authenticator_code(code, elements)
     else:
+        logging.info(f"User: {user.telegram_id} oauth2 exists")
+        driver.make_exception_screenshot()
         await restart_authorize(user,
                                 state,
                                 "Отсутсвует двуфакторная аутентификация.")
         return
     
     if driver.check_oauth2_error():
+        logging.info(f"User: {user.telegram_id} wrote incorrect oath2 code.")
         await restart_authorize(user, state,
                                 "Введен неправильный код двухфакторной аутентификации.")
         return
 
     anomaly = driver.check_anomaly(user.telegram_id)
     if anomaly:
+        logging.info(f"User: {user.telegram_id} found anomaly")
         code = await _get_anomaly_code_and_send_message(user, state)
         if not code:
+            logging.info(f"User: {user.telegram_id} waiting time exists.")
             await restart_authorize(user,
                                     state,
                                     "Истекло время ожидания кода.")
@@ -162,6 +172,7 @@ async def authorize_gosuslugi(driver: SearchHelper,
             driver.fix_photo_anomaly(code)
     
     if driver.authorize_not_success():
+        logging.info(f"User: {user.telegram_id} wrote incorrect logging or password")
         await restart_authorize(user, state,
                                 "Введен неправильный логин или пароль")
         return
@@ -200,7 +211,8 @@ def wrap_async_func(user: AuthorizeUser, state: FSMContext):
     try:
         asyncio.run(authorize_gosuslugi(driver, user, state))
     except Exception as e:
-        logging.warning(e)
+        logging.critical(e)
+        driver.make_exception_screenshot()
         asyncio.run(restart_authorize(user, state,
                                       "Неизвестная ошибка при авторизации."))
         driver.driver.quit()

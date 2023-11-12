@@ -1,4 +1,5 @@
-from typing import Literal
+import datetime
+from typing import Literal, Optional
 
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
@@ -24,8 +25,6 @@ class GosUslugiSearchLocators:
     "Кнопка входа в гос услуги"
     LOCATOR_OF_OAUTH2_INPUT_FIELDS = (By.XPATH, "//input[@type='tel']")
     "Поля ввода для кода двухэтапной аутентификации."
-    LOCATOR_LATER_BUTTON = (By.CLASS_NAME, "plain-button-inline")
-    "Кнопка пропуска подключения входа с подтверждением."
     LOCATOR_OF_ANOMALY_PHOTO_INPUT_FIELD = (By.XPATH, "//input[@type='text']")
     "Поле ввода кода фото капчи."
     LOCATOR_OF_ANOMALY_TEXT_INPUT_FIELD = (By.XPATH, "//input[@class='input__field']")
@@ -73,10 +72,15 @@ class SearchHelper(BasePage):
         """
         return self.find_element(EduSearchLocators.LOCATOR_OF_MENU_BUTTON)
     
-    def get_participant_id(self):
+    def get_participant_id(self) -> Optional[str]:
         "Возвращает уникальный айди пользователя."
         return self.find_element(
                 EduSearchLocators.LOCATOR_PARTICIPANT_ID).get_attribute("data-guid")
+    
+    def make_exception_screenshot(self) -> None:
+        "Делает скриншот экрана в случае возникновения ошибки."
+        filename = f"{datetime.datetime.now().strftime('exception_%d.%m.%y_%H_%M_%S')}.png"
+        self.make_fullscreen_screenschot(f"{BASE_DIR}/temp/{filename}")
 
     def authorize(self, user: User) -> None:
         "Производит авторизацию через гос услуги, используя логин/пароль."
@@ -99,10 +103,6 @@ class SearchHelper(BasePage):
                     time=15)
         except TimeoutException:
             return False
-
-    def skip_oauth2(self) -> None:
-        "Пропускает просьбу о подключении двухэтапной аутентификации."
-        self.find_element(GosUslugiSearchLocators.LOCATOR_LATER_BUTTON).click()
     
     def fix_photo_anomaly(self, code: str) -> None:
         "Решает фото каптчу."

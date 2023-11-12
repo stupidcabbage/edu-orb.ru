@@ -47,6 +47,10 @@ class BasePage:
         "Загружает страницу авторизации сайта https://de.edu.orb.ru/."
         return self.driver.get(self.base_login_url)
 
+    def make_fullscreen_screenschot(self, filename: str) -> None:
+        "Делает скриншот полного экрана."
+        self.driver.save_screenshot(filename)
+
     def go_to_diary_page(self):
         "Загружает страницу дневника учащегося сайта https://de.edu.orb.ru/."
         return self.driver.get(self.diary_url)
