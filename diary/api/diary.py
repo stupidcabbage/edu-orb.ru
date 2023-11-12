@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional
 
-from loguru import logger
+import logging
 
 from diary.api.classes import Diary, Lesson
 from diary.api.response import get_json_response
@@ -33,7 +33,7 @@ async def get_diary(user: User, date: datetime.datetime) -> Optional[Diary]:
     try:
         return Diary.model_validate(diary)
     except Exception as e:
-        logger.warning(f"Не удалось получить дневник: {e}")
+        logging.warning(f"Не удалось получить дневник: {e}")
         return None
 
 

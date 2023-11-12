@@ -17,6 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent
 GOSUSLUGI_LOGIN = os.getenv("login")
 GOSUSLUGI_PASSWORD = os.getenv("password")
 TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
+SENTRY_DSN = os.getenv("DSN")
 
 bot = Bot(TELEGRAM_BOT_TOKEN, parse_mode=ParseMode.HTML)
 second_bot = TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="html")
