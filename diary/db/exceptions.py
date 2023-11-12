@@ -1,3 +1,4 @@
+import logging
 from typing import Callable, Optional
 
 
@@ -10,4 +11,6 @@ class FieldDoesNotExists(Exception):
             self.class_name = "Unknown"
 
     def __str__(self):
-        return f"Данного поля не существует в классе {self.class_name}"
+        message = f"Данного поля не существует в классе {self.class_name}"
+        logging.warning(message)
+        return message

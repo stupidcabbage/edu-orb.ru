@@ -1,4 +1,4 @@
-from loguru import logger
+import logging
 from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm import Session
 
@@ -23,7 +23,7 @@ class DBsession(object):
 
     def add_model(self, model: Base, need_flush: bool = False):
         self._session.add(model)
-        logger.info(f"Created model: {model}")
+        logging.info(f"Created model: {model}")
         
         if need_flush:
             self._session.flush([model])
@@ -35,10 +35,10 @@ class DBsession(object):
         try:
             self._session.commit()
         except IntegrityError as e:
-            logger.error(f"{__name__} {e}")
+            logging.critical(f"{__name__} {e}")
             raise
         except DataError as e:
-            logger.error(f"{__name__} {e}")
+            logging.critical(f"{__name__} {e}")
             raise
         
         if need_close:
@@ -51,8 +51,8 @@ class DBsession(object):
         try:
             self._session.close()
         except IntegrityError as e:
-            logger.error(f"{__name__} {e}")
+            logging.critical(f"{__name__} {e}")
             raise
         except DataError as e:
-            logger.error(f"{__name__} {e}")
+            logging.critical(f"{__name__} {e}")
             raise

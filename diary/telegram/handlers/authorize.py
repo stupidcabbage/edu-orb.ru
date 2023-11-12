@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import logging
 import os
 import re
 import threading
@@ -174,6 +175,7 @@ async def authorize_gosuslugi(driver: SearchHelper,
         add_user(db_session, db_user, need_flush=False)
         db_session.commit_session(need_close=True)
     except Exception:
+        logging.critical(f"Incorrect create user: {user}")
         db_session.rollback()
         await restart_authorize(user, state,
                                 "Некорректное добавление пользователя.")
@@ -196,7 +198,7 @@ def wrap_async_func(user: AuthorizeUser, state: FSMContext):
     try:
         asyncio.run(authorize_gosuslugi(driver, user, state))
     except Exception as e:
-        logger.warning(e)
+        logging.warning(e)
         asyncio.run(restart_authorize(user, state,
                                       "Неизвестная ошибка при авторизации."))
         driver.driver.quit()
