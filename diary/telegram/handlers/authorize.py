@@ -9,7 +9,6 @@ import time
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from emoji import EMOJI_DATA
-from loguru import logger
 from telebot.types import ReplyKeyboardRemove as TReplyKeyboardRemove
 
 from diary.api.parcipiants import get_parcipiants
@@ -138,7 +137,10 @@ async def authorize_gosuslugi(driver: SearchHelper,
             return
         driver.send_authenticator_code(code, elements)
     else:
-        driver.skip_oauth2()
+        await restart_authorize(user,
+                                state,
+                                "Отсутсвует двуфакторная аутентификация.")
+        return
     
     if driver.check_oauth2_error():
         await restart_authorize(user, state,
@@ -213,7 +215,7 @@ async def correct_data(callback: types.CallbackQuery,
                 password=user_data["password"],
                 telegram_id=callback.message.chat.id)
 
-    await callback.message.edit_text(f"Пытаюсь войти...")
+    await callback.message.edit_text(await render_template("try_authorize.j2"))
     _thread = threading.Thread(target=wrap_async_func, args=(user, state))
     _thread.start()
     await callback.answer()

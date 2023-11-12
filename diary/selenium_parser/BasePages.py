@@ -96,7 +96,7 @@ class SearchHelper(BasePage):
         try:
             return self.find_elements(
                     GosUslugiSearchLocators.LOCATOR_OF_OAUTH2_INPUT_FIELDS,
-                    time=5)
+                    time=15)
         except TimeoutException:
             return False
 
@@ -117,7 +117,7 @@ class SearchHelper(BasePage):
     def check_oauth2_error(self):
         "Проверяет, что код OAUTH2 введен корректно."
         try:
-            self.find_element(GosUslugiSearchLocators.LOCATOR_OF_OAUTH2_ANOMALY, time=1)
+            self.find_element(GosUslugiSearchLocators.LOCATOR_OF_OAUTH2_ANOMALY, time=3)
             return True
         except TimeoutException:
             return False
