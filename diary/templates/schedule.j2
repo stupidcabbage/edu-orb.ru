@@ -14,7 +14,7 @@
 
 {% endif %}
 {% if lesson.absenceRaw[0] %}
-| <i>Посещение: 
+ | <i>Посещение: 
 {% for i in range(lesson.absenceRaw|length) %}
 {% if i == lesson.absenceRaw|length -1 %}
 {{ lesson.absenceRaw[i] }} 
