@@ -33,6 +33,7 @@ def delete_user(session: DBsession,
 
         session.execute(user_detele_stmt)
         session.execute(parcipiants_stmt)
+        session.commit_session(need_close=True)
     except DatabaseError as e:
         logger.warning(f"Не получилось удалить пользователя: {e}")
         session.rollback()
