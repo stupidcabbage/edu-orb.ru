@@ -82,6 +82,7 @@ class SearchHelper(BasePage):
         filename = f"{datetime.datetime.now().strftime('exception_%d.%m.%y_%H_%M_%S')}.png"
         self.make_fullscreen_screenschot(f"{BASE_DIR}/temp/{filename}")
 
+
     def authorize(self, user: User) -> None:
         "Производит авторизацию через гос услуги, используя логин/пароль."
         self.find_element(
