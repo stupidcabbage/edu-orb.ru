@@ -10,7 +10,7 @@ class BasePage:
     "Общий интерфейс работы с  веб-сайтами."
     def __init__(self):
         self.options = webdriver.ChromeOptions()
-        self.options.add_argument("headless")
+        # self.options.add_argument("headless")
         self.options.add_argument("--window-size=212,550")
         self.options.add_argument("--no-sandbox")
         self.options.add_argument('--disable-dev-shm-usage')

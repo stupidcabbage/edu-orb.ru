@@ -70,7 +70,10 @@ class SearchHelper(BasePage):
         Проверяет, что пользователь после страницы авторизации
         перешел на сайт дневника.
         """
-        return self.find_element(EduSearchLocators.LOCATOR_OF_MENU_BUTTON)
+        try:
+            return self.find_element(EduSearchLocators.LOCATOR_OF_MENU_BUTTON)
+        except TimeoutException:
+            return False
     
     def get_participant_id(self) -> Optional[str]:
         "Возвращает уникальный айди пользователя."

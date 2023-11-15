@@ -5,6 +5,7 @@ import os
 import re
 import threading
 import time
+from typing import Optional
 
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
@@ -125,10 +126,17 @@ async def authorize_gosuslugi(driver: SearchHelper,
             return
 
         if anomaly == "TEXT_CAPTCHA":
+            logging.info(f"User: {user.telegram_id} found text anomaly")
             driver.fix_captcha_anomaly(code)
         elif anomaly == "PHOTO_CAPTCHA":
+            logging.info(f"User: {user.telegram_id} found photo anomaly")
             driver.fix_photo_anomaly(code)
 
+    if driver.authorize_not_success():
+        logging.info(f"User: {user.telegram_id} wrote incorrect anomaly answer")
+        await restart_authorize(user, state,
+                                "Капча решена неправильно.")
+        return
 
     elements = driver.user_has_oauth2()
 
@@ -142,7 +150,18 @@ async def authorize_gosuslugi(driver: SearchHelper,
             return
         driver.send_authenticator_code(code, elements)
     else:
-        logging.info(f"User: {user.telegram_id} oauth2 exists")
+        if driver.diary_is_open():
+            phpsessid = driver.get_phpsessid().get("value")
+            driver.driver.quit()
+            db_user = await create_user(user, phpsessid, state)
+            second_bot.send_message(user.telegram_id,
+                            await render_template("success_authorize.j2",
+                                                 {"user": db_user.parcipiants_id[0].name}),
+                            reply_markup=TReplyKeyboardRemove())
+            await state.clear()
+            return
+
+        logging.info(f"User: {user.telegram_id} oauth2 does not exists")
         driver.make_exception_screenshot()
         await restart_authorize(user,
                                 state,
@@ -166,9 +185,12 @@ async def authorize_gosuslugi(driver: SearchHelper,
                                     "Истекло время ожидания кода.")
             return
 
+
         if anomaly == "TEXT_CAPTCHA":
+            logging.info(f"User: {user.telegram_id} found text anomaly")
             driver.fix_captcha_anomaly(code)
         elif anomaly == "PHOTO_CAPTCHA":
+            logging.info(f"User: {user.telegram_id} found photo anomaly")
             driver.fix_photo_anomaly(code)
     
     if driver.authorize_not_success():
@@ -177,9 +199,23 @@ async def authorize_gosuslugi(driver: SearchHelper,
                                 "Введен неправильный логин или пароль")
         return
 
-    driver.diary_is_open()
+    if not driver.diary_is_open():
+        logging.info(f"User: {user.telegram_id} сайт дневника не отвечает.")
+        await restart_authorize(user, state,
+                                "Сайт электронного дневника не отвечает.")
+        return
+
     phpsessid = driver.get_phpsessid().get("value")
     driver.driver.quit()
+    db_user = await create_user(user, phpsessid, state)
+    second_bot.send_message(user.telegram_id,
+                            await render_template("success_authorize.j2",
+                                                 {"user": db_user.parcipiants_id[0].name}),
+                            reply_markup=TReplyKeyboardRemove())
+    await state.clear()
+
+
+async def create_user(user: AuthorizeUser, phpsessid: str, state) -> Optional[User]:
     db_user = User(telegram_id=user.telegram_id,
                    phpsessid=phpsessid)
     parcipiant_id = await get_parcipiants(db_user)
@@ -193,17 +229,7 @@ async def authorize_gosuslugi(driver: SearchHelper,
         await restart_authorize(user, state,
                                 "Некорректное добавление пользователя.")
         return
-    if len(parcipiant_id) > 1:
-        second_bot.send_message(user.telegram_id,
-                                await render_template("chose_user.j2"))
-        await state.clear()
-        return
-    db_user = get_user(db_session, user.telegram_id)
-    second_bot.send_message(user.telegram_id,
-                            await render_template("success_authorize.j2",
-                                                 {"user": db_user.parcipiants_id[0].name}),
-                            reply_markup=TReplyKeyboardRemove())
-    await state.clear()
+    return get_user(db_session, user.telegram_id)
 
 
 def wrap_async_func(user: AuthorizeUser, state: FSMContext):
