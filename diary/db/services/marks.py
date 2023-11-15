@@ -1,9 +1,7 @@
-import logging
-from typing import Optional, Sequence
+from typing import Sequence
 from datetime import datetime
 
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func, select
 from diary.db.models import Mark
 from diary.db.models.users import ParcipiantsID
 from diary.db.sessions import DBsession
@@ -30,7 +28,100 @@ def get_db_subject_marks(session: DBsession,
     return session.scalars(stmt).all()
 
 
-def is_subject_mark_exists(session: DBsession, mark: Mark) -> bool:
+def get_count_db_subject_marks(
+        session: DBsession, subject: str, date: datetime,
+        parcipiant: ParcipiantsID) -> int:
+    """
+    Возвращает кол-во оценок (не считая пропуски, болезни),
+    начиная с переданной даты. 
+
+    :param session DBsession: Сессия БД.
+    :param subject str: Предмет, по которому производится выборка.
+    :param date datetime: Дата, с которой производится выборка.
+    :param parcipiant ParcipiantsID: Оценки ученика. 
+    :param lesson_number int: Номер урока.
+    """
+    stmt = (
+            select(func.count(Mark.id)).
+            where(Mark.subject == subject).
+            where(date <= Mark.date).
+            where(Mark.parcipiant == parcipiant).
+            where(5 >= Mark.mark)
+    )
+    return session.scalar(stmt)
+
+
+def _get_count_absence_subject(
+        x: int, session: DBsession, subject: str, date: datetime,
+        parcipiant: ParcipiantsID) -> int:
+    """
+    Возвращает кол-во переданного absence, начиная с переданной даты. 
+
+    :param session DBsession: Сессия БД.
+    :param subject str: Предмет, по которому производится выборка.
+    :param date datetime: Дата, с которой производится выборка.
+    :param parcipiant ParcipiantsID: Оценки ученика. 
+    :param lesson_number int: Номер урока.
+    """
+    stmt = (
+            select(func.count(Mark.id)).
+            where(Mark.subject == subject).
+            where(date <= Mark.date).
+            where(Mark.parcipiant == parcipiant).
+            where(x == Mark.mark)
+    )
+    return session.scalar(stmt)
+
+
+def get_count_noshow_subject(
+        session: DBsession, subject: str, date: datetime,
+        parcipiant: ParcipiantsID) -> int:
+    """
+    Возвращает кол-во неявок по определенному предмету,
+    начиная с переданной даты. 
+
+    :param session DBsession: Сессия БД.
+    :param subject str: Предмет, по которому производится выборка.
+    :param date datetime: Дата, с которой производится выборка.
+    :param parcipiant ParcipiantsID: Оценки ученика. 
+    :param lesson_number int: Номер урока.
+    """
+    return _get_count_absence_subject(6, session, subject, date, parcipiant)
+
+
+def get_count_illes_subject(
+        session: DBsession, subject: str, date: datetime,
+        parcipiant: ParcipiantsID) -> int:
+    """
+    Возвращает кол-во болезней по определенному предмету,
+    начиная с переданной даты. 
+
+    :param session DBsession: Сессия БД.
+    :param subject str: Предмет, по которому производится выборка.
+    :param date datetime: Дата, с которой производится выборка.
+    :param parcipiant ParcipiantsID: Оценки ученика. 
+    :param lesson_number int: Номер урока.
+    """
+    return _get_count_absence_subject(8, session, subject, date, parcipiant)
+
+
+def get_count_passes_subject(
+        session: DBsession, subject: str, date: datetime,
+        parcipiant: ParcipiantsID) -> int:
+    """
+    Возвращает кол-во пропусков по определенному предмету,
+    начиная с переданной даты. 
+
+    :param session DBsession: Сессия БД.
+    :param subject str: Предмет, по которому производится выборка.
+    :param date datetime: Дата, с которой производится выборка.
+    :param parcipiant ParcipiantsID: Оценки ученика. 
+    :param lesson_number int: Номер урока.
+    """
+    return _get_count_absence_subject(7, session, subject, date, parcipiant)
+
+
+def is_mark_exists(session: DBsession, mark: Mark):
     """
     Возвращает True, если оценка существует. False - если не существует.
 
@@ -41,19 +132,20 @@ def is_subject_mark_exists(session: DBsession, mark: Mark) -> bool:
     :param lesson_number int: Номер урока.
     """
     stmt = (
-            select(Mark).
+            select(func.count()).
+            select_from(Mark).
             where(Mark.subject == mark.subject).
             where(Mark.date == mark.date).
-            where(Mark.parcipiant == mark.parcipiant).
+            where(Mark.parcipiant_id == mark.parcipiant_id).
             where(Mark.lesson_number == mark.lesson_number)
-    ).exists()
-    return session.query(stmt)
+    )
+    return session.scalar(stmt)
 
 
 def add_mark(session: DBsession, model: Mark, need_flush: bool = False):
     "Добавить в БД модель оценки пользователя"
-    session.add_model(model, need_flush)
     try:
+        session.add_model(model, need_flush)
         session.commit_session(True)
     except Exception:
         session.rollback()

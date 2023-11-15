@@ -12,7 +12,6 @@ def get_weekday_russian(date: datetime.datetime) -> str:
     "Возвращает название недели на русском языке"
     return WEEKDAYS[date.weekday()]
 
-
 def get_tomorrow_date() -> datetime.datetime:
     "Возвращает дату завтрашнего дня."
     return datetime.datetime.today() + datetime.timedelta(days=1)
@@ -34,6 +33,16 @@ def parse_date(date: str) -> datetime.datetime:
         raise DateNotCorrect
     return parsed_date
 
+def get_notification_days() -> list[datetime.datetime]:
+    """
+    Возвращает список из дат (три понедельника), в которые
+    могли поставить оценки.
+    Первая дата - ближайший понедельник. Последующие - предыдущий понедельник.
+    """
+    days = []
+    for i in range(1, 4):
+        days.append(parse_date("понедельник") - datetime.timedelta(days=i*7))
+    return days
 
 def format_date(date: datetime.datetime) -> str:
     "Возвращает время в формате: день.месяц.год"

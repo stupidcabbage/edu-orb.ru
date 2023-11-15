@@ -45,7 +45,7 @@ async def get_marks(callback: types.CallbackQuery,
                     callback_data: SchoolPeriodCallbackFactory):
     user = get_user(db_session, callback.message.chat.id)
     
-    marks = await gm(callback_data.date_begin, callback_data.date_end, user)
+    marks = await gm(parse_date(callback_data.date_begin), parse_date(callback_data.date_end), user)
     await callback.message.edit_text(await render_template("marks.j2",
                                                            {"marks": marks}),
                                      reply_markup=MARKS_KEYBOARD())

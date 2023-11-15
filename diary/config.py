@@ -34,5 +34,5 @@ PATH_TO_DB = f"{BASE_DIR.parent}/db.sqlite3"
 
 
 engine = create_engine(f"sqlite+pysqlite:///{PATH_TO_DB}")
-session_factory = sessionmaker(bind=engine)
+session_factory = sessionmaker(bind=engine, expire_on_commit=False)
 db_session = DBsession(session_factory())
