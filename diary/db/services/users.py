@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Sequence
 
 from loguru import logger
 from sqlalchemy import delete, select
@@ -13,14 +13,11 @@ from diary.db.sessions import DBsession
 def add_user(session: DBsession, model: User, need_flush: bool = True):
     try:
         session.add_model(model, need_flush)
-        logger.info(f"Создал модель пользователя: {model}, need_flush={need_flush}")
         session.commit_session(need_close=True)
-    except IntegrityError as e:
-        logger.warning(f"Не получилось создать пользователя: {e}")
+    except IntegrityError:
         session.rollback()
         raise FieldDoesNotExists(User)
-    except DatabaseError as e:
-        logger.warning(f"Не получилось создать пользователя: {e}")
+    except DatabaseError:
         session.rollback()
         raise
 
@@ -39,6 +36,10 @@ def delete_user(session: DBsession,
         session.rollback()
         raise
 
+def get_user_for_notification(session: DBsession) -> Sequence[User]:
+    "Возвращает список пользователей, которые подписаны на уведомления."
+    stmt = select(User).where(User.is_admin == True)
+    return session.scalars(stmt).all()
 
 def get_user(session: DBsession, telegram_id: int) -> Optional[User]:
     stmt = select(User).where(User.telegram_id == telegram_id)

@@ -42,7 +42,7 @@ async def get_lessons(user: User,
     """
     Возвращает уроки переданного дня. Если в этот день нет уроков, то
     возвращает None
-    :param date str: Дата начала в расписании (DD.MM.YYYY). Default=следующий день.
+    :param date str: Дата начала в расписании (DD.MM.YYYY).
     :param user User: Пользователь, который делает запрос.
     """
     diary = await get_diary(user, date)
