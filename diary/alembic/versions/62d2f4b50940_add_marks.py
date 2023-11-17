@@ -1,8 +1,8 @@
 """add marks
 
-Revision ID: 4c97930226e1
+Revision ID: 62d2f4b50940
 Revises: ceb47c6d9afe
-Create Date: 2023-11-15 17:21:15.242368
+Create Date: 2023-11-17 16:10:07.610694
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '4c97930226e1'
+revision: str = '62d2f4b50940'
 down_revision: Union[str, None] = 'ceb47c6d9afe'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -28,8 +28,7 @@ def upgrade() -> None:
     sa.Column('date', sa.DateTime(), nullable=False),
     sa.Column('parcipiant_id', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['parcipiant_id'], ['parcipiants_id.parcipiant_id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('subject', 'lesson_number', 'mark', 'date', 'parcipiant_id', name='unique_mark')
+    sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
 

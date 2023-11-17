@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import sys
-from diary.config import db_session
 from diary.api.notification import marks_poiling
 logging.basicConfig(
         level=logging.INFO,

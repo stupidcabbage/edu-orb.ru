@@ -35,10 +35,8 @@ class DBsession(object):
     def commit_session(self, need_close: bool = False):
         try:
             self._session.commit()
-        except IntegrityError as e:
-            logging.critical(f"{__name__} {e}")
-            raise
-        except DataError as e:
+        except Exception as e:
+            self.rollback()
             logging.critical(f"{__name__} {e}")
             raise
         

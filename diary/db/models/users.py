@@ -95,7 +95,6 @@ class Mark(Base):
     :param parcipiant: Владелец оценки.
     """
     __tablename__ = "marks_table"
-    __table_args__ = (UniqueConstraint("subject", "lesson_number", "mark", "date", "parcipiant_id", name="unique_mark"),)
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     "Уникальный номер оценки (не нужно заполнять)"

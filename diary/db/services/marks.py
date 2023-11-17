@@ -126,10 +126,7 @@ def is_mark_exists(session: DBsession, mark: Mark):
     Возвращает True, если оценка существует. False - если не существует.
 
     :param session DBsession: Сессия БД.
-    :param subject str: Предмет, по которому производится выборка.
-    :param date datetime: Дата, с которой производится выборка.
-    :param parcipiant ParcipiantsID: Оценки ученика. 
-    :param lesson_number int: Номер урока.
+    :param mark Mark: Отметка
     """
     stmt = (
             select(func.count()).
@@ -141,11 +138,14 @@ def is_mark_exists(session: DBsession, mark: Mark):
     )
     return session.scalar(stmt)
 
+def bulk_add_marks(session: DBsession, models: list[Mark], need_flush: bool = False):
+    "Добавить оценки списком."
+    for mark in models:
+        session.add_model(mark, need_flush)
+    session.commit_session(True)
+
 
 def add_mark(session: DBsession, model: Mark, need_flush: bool = False):
     "Добавить в БД модель оценки пользователя"
-    try:
-        session.add_model(model, need_flush)
-        session.commit_session(True)
-    except Exception:
-        session.rollback()
+    session.add_model(model, need_flush)
+    session.commit_session(True)
