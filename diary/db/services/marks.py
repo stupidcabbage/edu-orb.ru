@@ -51,6 +51,26 @@ def get_count_grades(
     )
     return session.scalar(stmt)
 
+def get_count_marks(
+        session: DBsession, subject: str, date: datetime,
+        parcipiant: ParcipiantsID) -> int:
+    """
+    Возвращает кол-во всех ометок,
+    начиная с переданной даты. 
+
+    :param session DBsession: Сессия БД.
+    :param subject str: Предмет, по которому производится выборка.
+    :param date datetime: Дата, с которой производится выборка.
+    :param parcipiant ParcipiantsID: Оценки ученика. 
+    :param lesson_number int: Номер урока.
+    """
+    stmt = (
+            select(func.count(Mark.id)).
+            where(Mark.subject == subject).
+            where(date <= Mark.date).
+            where(Mark.parcipiant == parcipiant)
+    )
+    return session.scalar(stmt)
 
 def _get_count_absence_subject(
         x: int, session: DBsession, subject: str, date: datetime,

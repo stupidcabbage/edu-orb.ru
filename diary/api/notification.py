@@ -151,15 +151,3 @@ class MarkNotificationWorker(MarkNotification):
                                         self.notification_days[self.THIRD_WEEK],
                                         self.user.current_parcipiant())
         return subject.marks and len(subject.marks) > (marks_amount + len(self.new_marks))
-
-
-
-
-
-
-
-
-
-
-
-

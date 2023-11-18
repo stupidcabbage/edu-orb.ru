@@ -37,39 +37,39 @@ class SubjectMarks:
     """
     Класс оценок по определенному предмету.
     :param name Optional[str]: Название предмета.
-    :param marks Optional[tuple[int]]: Оценки.
-    :param middle_marks Optional[float]: Средний балл.
-    :param noshow Optional[int]: Количество неявок.
-    :param passes Optional[int]: Количество пропусков.
-    :param illes Optional[int]: Количество пропусков по болезни.
+    :param marks list[int]: Оценки.
+    :param middle_marks float: Средний балл.
+    :param noshow int: Количество неявок.
+    :param passes int: Количество пропусков.
+    :param illes int: Количество пропусков по болезни.
     """
     name: Optional[str] = None
     "Название предмета"
     marks: Optional[list[int]] = None
     "Оценки"
-    middle_marks: Optional[float] = None
+    middle_marks: float = 0.0
     "Средний балл"
-    noshow: Optional[int] = None
+    noshow: int = 0
     "Неявка"
-    passes: Optional[int] = None
+    passes: int = 0
     "Пропуск"
-    illes: Optional[int] = None
+    illes: int = 0
     "Болезнь"
         
     def _to_list(self, value) -> list[int] | None:
         if self._value_exists(value):
             return list(map(int, value.split(", ")))
-        return None
+        return []
 
     def _to_int(self, value) -> Optional[int]:
         if self._value_exists(value):
             return int(value)
-        return None
+        return 0
 
     def _to_float(self, value) -> Optional[float]:
         if self._value_exists(value):
             return float(value)
-        return None
+        return 0.0
     
     def _value_exists(self, value):
         return value and value != "нет"
