@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import sys
-from diary.config import db_session
 from diary.api.class_notification import MarkNotification
 logging.basicConfig(
         level=logging.INFO,
@@ -10,6 +9,6 @@ logging.basicConfig(
             logging.StreamHandler(sys.stdout)
             ])
 
-notification = MarkNotification(db_session)
+notification = MarkNotification()
 a = asyncio.run(notification.start_poiling())
 print(a)
