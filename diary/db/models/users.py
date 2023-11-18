@@ -1,3 +1,4 @@
+
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
@@ -44,6 +45,9 @@ class User(Base):
     
     def __repr__(self) -> str:
         return f"Пользователь id={self.telegram_id!r} parcipiants_id={self.parcipiants_id!r}"
+ 
+    def current_parcipiant(self):
+        return self.parcipiants_id[0]
 
 
 class ParcipiantsID(Base):
@@ -56,6 +60,7 @@ class ParcipiantsID(Base):
     :param name str: Фамилия Имя Отчество
     :param grade str: Класс учащегося.
     :param school str: Школа учащегося.
+    :param marks list[Mark]: Оценки учащегося.
     """
     __tablename__ = "parcipiants_id"
     __table_args__ = {'extend_existing': True}
@@ -70,6 +75,7 @@ class ParcipiantsID(Base):
     "Школа учащегося."
     is_current: Mapped[bool] = mapped_column(default=True)
     "Статус использования данного ID прямо сейчас"
+    marks: Mapped[list["Mark"]] = relationship()
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user_account.telegram_id"))
     "Telegram ID пользователя, владеющим данным parcipiant_id"
@@ -77,3 +83,36 @@ class ParcipiantsID(Base):
 
     def __repr__(self) -> str:
         return f"name={self.name!r} parcipiant_id={self.parcipiant_id!r}"
+    
+
+class Mark(Base):
+    """
+    Оценка пользователя.
+    :param id int: Уникальный номер оценки (не нужно заполнять)
+    :param subject str: Название предмета.
+    :param lesson_number int: Номер урока.
+    :param mark int: Оценка.
+    :param date datetime: Дата, в которую поставили оценку.
+    :param parcipiant_id int: Айди владельца оценки.
+    :param parcipiant: Владелец оценки.
+    """
+    __tablename__ = "marks_table"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    "Уникальный номер оценки (не нужно заполнять)"
+    subject: Mapped[str] = mapped_column()
+    "Название предмета."
+    lesson_number: Mapped[int] = mapped_column()
+    "Номер урока."
+    mark: Mapped[int] = mapped_column()
+    "Оценка."
+    date: Mapped[datetime] = mapped_column()
+    "Дата, в которую поставили оценки."
+
+    parcipiant_id: Mapped[int] = mapped_column(ForeignKey("parcipiants_id.parcipiant_id"))
+    "Айди владельца оценки."
+    parcipiant: Mapped["ParcipiantsID"] = relationship("ParcipiantsID", back_populates="marks")
+    "Владелец оценки."
+    
+    def __repr__(self) -> str:
+        return f"ID: {self.id!r}, mark={self.mark!r} по {self.subject!r}, parcipiant={self.parcipiant!r}"

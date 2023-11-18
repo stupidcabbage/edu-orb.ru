@@ -29,7 +29,7 @@ async def command_start(message: Message):
 async def start(message: Message, is_callback: bool = False):
     user = get_user(db_session, message.chat.id) 
     if not user:
-        logging.info(f"Unathorized user send start command: {message.chat.id} {message.from_user.first_name}")
+        logging.info(f"Unathorized user send start command: {message.chat.id} {message.from_user.username}")
         await send_message(await render_template("unauthorized_start.j2"),
                             message,
                             is_callback,

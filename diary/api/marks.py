@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 
 from bs4 import BeautifulSoup
@@ -8,6 +9,7 @@ from diary.api.exceptions import ParcipiantNotFound, TableDoesntExists
 from diary.api.response import get_text_response
 from diary.config import CURRENT_USER
 from diary.db.models import User
+from diary.services.time import format_date
 
 ROW_VALUES = "td"
 "Строчки оценок"
@@ -35,33 +37,39 @@ class SubjectMarks:
     """
     Класс оценок по определенному предмету.
     :param name Optional[str]: Название предмета.
-    :param marks Optional[tuple[int]]: Оценки.
-    :param middle_marks Optional[float]: Средний балл.
-    :param noshow Optional[int]: Количество неявок.
-    :param passes Optional[int]: Количество пропусков.
-    :param illes Optional[int]: Количество пропусков по болезни.
+    :param marks list[int]: Оценки.
+    :param middle_marks float: Средний балл.
+    :param noshow int: Количество неявок.
+    :param passes int: Количество пропусков.
+    :param illes int: Количество пропусков по болезни.
     """
     name: Optional[str] = None
+    "Название предмета"
     marks: Optional[list[int]] = None
-    middle_marks: Optional[float] = None
-    noshow: Optional[int] = None
-    passes: Optional[int] = None
-    illes: Optional[int] = None
+    "Оценки"
+    middle_marks: float = 0.0
+    "Средний балл"
+    noshow: int = 0
+    "Неявка"
+    passes: int = 0
+    "Пропуск"
+    illes: int = 0
+    "Болезнь"
         
     def _to_list(self, value) -> list[int] | None:
         if self._value_exists(value):
             return list(map(int, value.split(", ")))
-        return None
+        return []
 
     def _to_int(self, value) -> Optional[int]:
         if self._value_exists(value):
             return int(value)
-        return None
+        return 0
 
     def _to_float(self, value) -> Optional[float]:
         if self._value_exists(value):
             return float(value)
-        return None
+        return 0.0
     
     def _value_exists(self, value):
         return value and value != "нет"
@@ -76,15 +84,15 @@ class SubjectMarks:
         else:
             super().__setattr__(key, value)
 
-
-async def get_marks(date_begin: str, date_end: str, user: User) -> list[SubjectMarks]:
+#TODO: перевести на datetime
+async def get_marks(date_begin: datetime, date_end: datetime, user: User) -> list[SubjectMarks]:
     """
     Возвращает оценки ввиде списка, состоящего из объектов вида SubjectMarks.
-    :param date_begin str: Дата начала выборки (DD.MM.YYYY).
-    :param date_end str: Дата конца выборки (DD.MM.YYYY).
+    :param date_begin datetime: Дата начала выборки (DD.MM.YYYY).
+    :param date_end datetime: Дата конца выборки (DD.MM.YYYY).
     :param user User: Пользователь, который делает запрос.
     """
-    html_text = await get_marks_html(date_begin, date_end, user)
+    html_text = await get_marks_html(format_date(date_begin), format_date(date_end), user)
     return await make_list_subjects(html_text)
 
 
