@@ -3,7 +3,10 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from diary.config import PATH_TO_DB
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+PATH_TO_DB = f"{BASE_DIR.parent}/db.sqlite3"
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

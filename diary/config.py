@@ -32,7 +32,6 @@ OAUTH2_REGEX = r"^\d\d\d\d\d\d$"
 TEMPLATES_DIR = BASE_DIR / "templates"
 PATH_TO_DB = f"{BASE_DIR.parent}/db.sqlite3"
 
-
 engine = create_engine(f"sqlite+pysqlite:///{PATH_TO_DB}")
 session_factory = sessionmaker(bind=engine, expire_on_commit=False)
 db_session = DBsession(session_factory())

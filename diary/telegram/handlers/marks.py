@@ -5,6 +5,7 @@ from diary.api.marks import get_marks as gm
 from diary.api.schoolperiods import get_school_periods
 from diary.config import db_session
 from diary.db.services.users import get_user
+from diary.services.time import parse_date
 from diary.telegram.handlers.message import send_message
 from diary.telegram.keyboards.marks import (MAKE_SCHOOL_PERIOD_KEYBOARD,
                                             MARKS_KEYBOARD,

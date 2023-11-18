@@ -40,7 +40,7 @@ def get_notification_days() -> list[datetime.datetime]:
     Первая дата - ближайший понедельник. Последующие - предыдущий понедельник.
     """
     days = []
-    for i in range(3, 6):
+    for i in range(1, 4):
         days.append(parse_date("понедельник") - datetime.timedelta(days=i*7))
     return days
 
