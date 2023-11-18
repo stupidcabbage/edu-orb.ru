@@ -1,3 +1,4 @@
+import time
 from abc import ABC
 from datetime import datetime
 from typing import Optional
@@ -25,13 +26,15 @@ class MarkNotification(ABC):
 
     async def start_poiling(self):
         "Старт проверки новых оценок."
-        self.users = get_user_for_notification(self.session)
-        await self.check_new_marks()
+        while True:
+            self.users = get_user_for_notification(self.session)
+            await self.check_new_marks()
+            time.sleep(10)
     
     async def check_new_marks(self):
         for user in self.users:
             worker = MarkNotificationWorker(user)
-            return worker.check_marks()
+            await worker.check_marks_and_notify()
 
 
 class MarkNotificationWorker(MarkNotification):
@@ -117,7 +120,7 @@ class MarkNotificationWorker(MarkNotification):
                     parcipiant_id=self.user.current_parcipiant().parcipiant_id)
 
     def is_amount_report_marks_more_amount_in_db(self, subject):
-        marks_amount = get_count_db_subject_marks(self.session, subject,
+        marks_amount = get_count_db_subject_marks(self.session, subject.name,
                                                   self.notification_days[self.THIRD_WEEK],
                                                   self.user.current_parcipiant())
         return subject.marks and len(subject.marks) > (marks_amount + len(self.new_marks))
