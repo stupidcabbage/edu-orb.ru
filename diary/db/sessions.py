@@ -1,4 +1,5 @@
 import logging
+
 from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm import Session
 
@@ -11,7 +12,7 @@ class DBsession(object):
 
     def __init__(self, session: Session, *args, **kwargs):
         self._session = session
-
+    
     def query(self, *entities, **kwargs):
         return self._session.query(*entities, **kwargs)
     
@@ -29,15 +30,14 @@ class DBsession(object):
             self._session.flush([model])
 
     def rollback(self):
+        logging.info(f"Session rollback")
         self._session.rollback()
 
     def commit_session(self, need_close: bool = False):
         try:
             self._session.commit()
-        except IntegrityError as e:
-            logging.critical(f"{__name__} {e}")
-            raise
-        except DataError as e:
+        except Exception as e:
+            self.rollback()
             logging.critical(f"{__name__} {e}")
             raise
         
@@ -49,6 +49,7 @@ class DBsession(object):
 
     def close_session(self):
         try:
+            logging.info(f"Close session")
             self._session.close()
         except IntegrityError as e:
             logging.critical(f"{__name__} {e}")

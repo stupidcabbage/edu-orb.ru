@@ -1,7 +1,6 @@
 import datetime
-from typing import Optional
-
 import logging
+from typing import Optional
 
 from diary.api.classes import Diary, Lesson
 from diary.api.response import get_json_response
@@ -36,13 +35,21 @@ async def get_diary(user: User, date: datetime.datetime) -> Optional[Diary]:
         logging.warning(f"Не удалось получить дневник: {e}")
         return None
 
+async def get_study_diary(user: User,
+                          date: datetime.datetime) -> Optional[dict[str, list[Lesson]]]:
+    diary = await get_diary(user, date)
+    if not diary.data:
+        return None
+    if not isinstance(diary.data.diary, dict):
+        return None
+    return diary.data.diary
 
 async def get_lessons(user: User,
                       date: datetime.datetime) -> Optional[list[Lesson]]:
     """
     Возвращает уроки переданного дня. Если в этот день нет уроков, то
     возвращает None
-    :param date str: Дата начала в расписании (DD.MM.YYYY). Default=следующий день.
+    :param date str: Дата начала в расписании (DD.MM.YYYY).
     :param user User: Пользователь, который делает запрос.
     """
     diary = await get_diary(user, date)

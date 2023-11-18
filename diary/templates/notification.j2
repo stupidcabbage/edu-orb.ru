@@ -1,0 +1,10 @@
+{% if marks|length > 1%}
+📬 <b>Вам поставили новые отметки:</b>
+{% else %}
+📬 <b>Вам поставили новую отметку:</b>
+{% endif %}
+<br><br>
+
+{% for mark in marks %}
+<b>{{ mark.date.strftime('%d.%m') }}</b> | {{ mark.subject }}: {{ mark.mark }}<br>
+{% endfor %}
