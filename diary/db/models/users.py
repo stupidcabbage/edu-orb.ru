@@ -1,3 +1,5 @@
+from diary.config import CURRENT_USER
+
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
@@ -44,6 +46,9 @@ class User(Base):
     
     def __repr__(self) -> str:
         return f"Пользователь id={self.telegram_id!r} parcipiants_id={self.parcipiants_id!r}"
+ 
+    def current_parcipiant(self):
+        return self.parcipiants_id[CURRENT_USER]
 
 
 class ParcipiantsID(Base):
@@ -79,9 +84,7 @@ class ParcipiantsID(Base):
 
     def __repr__(self) -> str:
         return f"name={self.name!r} parcipiant_id={self.parcipiant_id!r}"
-
-
-
+    
 
 class Mark(Base):
     """

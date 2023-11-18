@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 from bs4 import BeautifulSoup
 
 from diary.db.models.users import ParcipiantsID, User
 from diary.api.response import get_text_response
+
 
 
 async def get_index_parcipiant(user: User) -> str:
