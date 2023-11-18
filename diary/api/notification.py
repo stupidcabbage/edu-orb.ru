@@ -33,7 +33,7 @@ class MarkNotification(ABC):
         while True:
             self.users = get_user_for_notification(self.session)
             await self.check_new_marks()
-            time.sleep(10)
+            time.sleep(300)
     
     async def check_new_marks(self):
         """
