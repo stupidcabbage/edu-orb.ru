@@ -3,9 +3,8 @@ import logging
 import sys
 
 import sentry_sdk
-from sentry_sdk.integrations.logging import LoggingIntegration
-
 from aiogram import Dispatcher
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 from diary.config import SENTRY_DSN, bot
 from diary.telegram.handlers import (authorize, cancel, diary, help, marks,

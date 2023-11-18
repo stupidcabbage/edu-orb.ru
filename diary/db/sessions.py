@@ -1,4 +1,5 @@
 import logging
+
 from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm import Session
 

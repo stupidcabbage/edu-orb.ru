@@ -1,2 +1,2 @@
 from .base import Base
-from .users import AuthorizeUser, ParcipiantsID, User, Mark
+from .users import AuthorizeUser, Mark, ParcipiantsID, User

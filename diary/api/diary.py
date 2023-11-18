@@ -1,7 +1,6 @@
 import datetime
-from typing import Optional
-
 import logging
+from typing import Optional
 
 from diary.api.classes import Diary, Lesson
 from diary.api.response import get_json_response

@@ -1,7 +1,8 @@
-from typing import Sequence
 from datetime import datetime
+from typing import Sequence
 
 from sqlalchemy import func, select
+
 from diary.db.models import Mark
 from diary.db.models.users import ParcipiantsID
 from diary.db.sessions import DBsession
@@ -28,7 +29,7 @@ def get_db_subject_marks(session: DBsession,
     return session.scalars(stmt).all()
 
 
-def get_count_db_subject_marks(
+def get_count_grades(
         session: DBsession, subject: str, date: datetime,
         parcipiant: ParcipiantsID) -> int:
     """
