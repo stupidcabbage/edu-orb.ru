@@ -152,6 +152,7 @@ def is_mark_exists(session: DBsession, mark: Mark):
     stmt = (
             select(func.count()).
             select_from(Mark).
+            where(Mark.mark == mark.mark).
             where(Mark.subject == mark.subject).
             where(Mark.date == mark.date).
             where(Mark.parcipiant_id == mark.parcipiant_id).

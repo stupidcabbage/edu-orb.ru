@@ -35,6 +35,11 @@ class MarkNotification(ABC):
             await self.check_new_marks()
             time.sleep(300)
     
+    async def add_user(self, user: User):
+        "Добавляет нового пользователя в список уведомлений"
+        worker = MarkNotificationWorker(user)
+        await worker.check_marks_and_add_to_db()
+
     async def check_new_marks(self):
         """
         Проверяет на наличие новых оценок у всех пользователей,
@@ -59,14 +64,22 @@ class MarkNotificationWorker(MarkNotification):
         self.new_marks = []
         self.notification_days = get_notification_days()
 
+    async def check_marks_and_add_to_db(self):
+        """
+        Проверяет на наличие новых оценок у пользователя.
+        При наличии таковых: добавляет их в БД.
+        """
+        await self.check_marks()
+        if self.new_marks:
+            await self.add_marks_to_db()
+
     async def check_marks_and_notify(self):
         """
         Проверяет на наличие новых оценок у пользователя.
         При наличии таковых: добавляет их в БД и уведомляет пользователя.
         """
-        await self.check_marks()
+        await self.check_marks_and_add_to_db()
         if self.new_marks:
-            await self.add_marks_to_db()
             await self.notify()
     
     async def add_marks_to_db(self) -> None:

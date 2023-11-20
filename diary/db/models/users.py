@@ -9,6 +9,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 
 
+CURRENT_PARCIPIANT = 0
+
+
 @dataclass
 class AuthorizeUser:
     "Класс пользователя для авторизации"
@@ -42,12 +45,15 @@ class User(Base):
     "Дата первого отправленного сообщения в бота."
     is_admin: Mapped[bool] = mapped_column(default=False)
     "Является ли пользователем администратором."
-    
+    notification_status: Mapped[bool] = mapped_column(nullable=True,
+                                                      default=False)
+    "Статус состояния уведомлений."
+
     def __repr__(self) -> str:
         return f"Пользователь id={self.telegram_id!r} parcipiants_id={self.parcipiants_id!r}"
  
     def current_parcipiant(self):
-        return self.parcipiants_id[0]
+        return self.parcipiants_id[CURRENT_PARCIPIANT]
 
 
 class ParcipiantsID(Base):
