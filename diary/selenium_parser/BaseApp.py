@@ -10,10 +10,10 @@ class BasePage:
     "Общий интерфейс работы с  веб-сайтами."
     def __init__(self):
         self.options = webdriver.ChromeOptions()
-        self.options.add_argument("headless")
+        # self.options.add_argument("headless")
         self.options.add_argument("--window-size=212,700")
-        self.options.add_argument("--no-sandbox")
-        self.options.add_argument('--disable-dev-shm-usage')
+        # self.options.add_argument("--no-sandbox")
+        # self.options.add_argument('--disable-dev-shm-usage')
         # self.options.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
         self.driver = webdriver.Chrome(options=self.options)
         self.base_login_url = "https://de.edu.orb.ru/login"

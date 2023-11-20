@@ -222,10 +222,8 @@ async def create_user(user: AuthorizeUser, phpsessid: str, state) -> Optional[Us
     db_user.parcipiants_id = parcipiant_id
     try:
         add_user(db_session, db_user, need_flush=False)
-        db_session.commit_session(need_close=True)
     except Exception:
         logging.critical(f"Incorrect create user: {user}")
-        db_session.rollback()
         await restart_authorize(user, state,
                                 "Некорректное добавление пользователя.")
         return
