@@ -12,8 +12,8 @@ def MENU_KEYBOARD():
                                        callback_data="schedule")],
             [types.InlineKeyboardButton(text="🔖Профиль",
                                         callback_data="user"),
-             types.InlineKeyboardButton(text="📰 Возможности",
-                                        callback_data="help")]
+             types.InlineKeyboardButton(text="🗞Уведомления",
+                                        callback_data="notification_menu")]
             ]
     keyboard = types.InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard

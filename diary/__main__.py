@@ -10,10 +10,12 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 from diary.config import SENTRY_DSN, bot
 from diary.telegram.handlers import (authorize, cancel, diary, help, marks,
                                      schedule, start, user)
+from diary.telegram.handlers.notifications import notification
 from diary.api.notification import MarkNotification
 
 HANDLERS = (diary.router, cancel.router, start.router, authorize.router,
-            user.router, marks.router, schedule.router, help.router)
+            user.router, marks.router, schedule.router, help.router,
+            notification.router)
 
 dp = Dispatcher()
 

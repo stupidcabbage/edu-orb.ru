@@ -8,6 +8,16 @@ from diary.db.models.users import ParcipiantsID
 from diary.db.sessions import DBsession
 
 
+def get_five_last_marks(session: DBsession,
+                        parcipiant: ParcipiantsID):
+    stmt = (
+            select(Mark).
+            where(Mark.parcipiant == parcipiant).
+            limit(5)
+    )
+    return session.scalars(stmt).all()
+
+
 def get_db_subject_marks(session: DBsession,
                  subject: str,
                  date: datetime,

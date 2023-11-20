@@ -52,7 +52,7 @@ class User(Base):
     def __repr__(self) -> str:
         return f"Пользователь id={self.telegram_id!r} parcipiants_id={self.parcipiants_id!r}"
  
-    def current_parcipiant(self):
+    def current_parcipiant(self) -> "ParcipiantsID":
         return self.parcipiants_id[CURRENT_PARCIPIANT]
 
 

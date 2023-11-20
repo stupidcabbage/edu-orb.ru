@@ -14,7 +14,7 @@ from diary.db.services.marks import (bulk_add_marks, get_count_grades,
                                      is_mark_exists)
 from diary.db.services.users import get_user_for_notification
 from diary.services.time import get_notification_days, parse_date
-from diary.telegram.handlers.notification import send_notification_message
+from diary.telegram.handlers.notifications.send_notification import send_notification_message
 
 
 class MarkNotification(ABC):
@@ -37,8 +37,12 @@ class MarkNotification(ABC):
     
     async def add_user(self, user: User):
         "Добавляет нового пользователя в список уведомлений"
-        worker = MarkNotificationWorker(user)
-        await worker.check_marks_and_add_to_db()
+        try:
+            worker = MarkNotificationWorker(user)
+            await worker.check_marks_and_add_to_db()
+        except Exception as e:
+            logging.warning(f"MarkNotificationWorker exception: {e}")
+            raise
 
     async def check_new_marks(self):
         """
@@ -46,8 +50,11 @@ class MarkNotification(ABC):
         для которых это необходимо.
         """
         for user in self.users:
-            worker = MarkNotificationWorker(user)
-            await worker.check_marks_and_notify()
+            try:
+                worker = MarkNotificationWorker(user)
+                await worker.check_marks_and_notify()
+            except Exception as e:
+                logging.warning(f"MarkNotificationWorker exception: {e}")
 
 
 class MarkNotificationWorker(MarkNotification):

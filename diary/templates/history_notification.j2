@@ -1,0 +1,5 @@
+🗃 <b>Ваши последние 5 оценок:</b><br><br>
+
+{% for mark in marks %}
+<b>{{ mark.date.strftime('%d.%m') }}</b> | {{ mark.subject }}: {{ mark.mark }}<br>
+{% endfor %}
