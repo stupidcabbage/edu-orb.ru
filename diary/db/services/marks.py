@@ -13,15 +13,15 @@ def get_five_last_marks(session: DBsession,
     stmt = (
             select(Mark).
             where(Mark.parcipiant == parcipiant).
+            order_by(Mark.id.desc()).
             limit(5)
     )
     return session.scalars(stmt).all()
 
 
-def get_db_subject_marks(session: DBsession,
-                 subject: str,
-                 date: datetime,
-                 parcipiant: ParcipiantsID) -> Sequence[Mark]:
+def get_db_subject_marks(
+        session: DBsession, subject: str, date: datetime,
+        parcipiant: ParcipiantsID) -> Sequence[Mark]:
     """
     Получить из БД оценки пользователя по определенному предмету
 
