@@ -2,7 +2,7 @@ import logging
 import time
 from abc import ABC
 from datetime import datetime
-from typing import Optional
+from typing import NoReturn, Optional
 
 from diary.api.classes import Lesson
 from diary.api.diary import get_study_diary
@@ -14,20 +14,17 @@ from diary.db.services.marks import (bulk_add_marks, get_count_grades,
                                      is_mark_exists)
 from diary.db.services.users import get_user_for_notification
 from diary.services.time import get_notification_days, parse_date
-from diary.telegram.handlers.notifications.send_notification import send_notification_message
+from diary.telegram.handlers.notifications.send_notification import \
+    send_notification_message
 
 
 class MarkNotification(ABC):
-    """
-    Уведомления о новых оценках.
-
-    :param session DBsession: Сессия для работы с БД.
-    """
+    """Уведомления о новых оценках."""
     def __init__(self):
         self.session = db_session
         self.users = []
 
-    async def start_poiling(self):
+    async def start_poiling(self) -> NoReturn:
         "Старт проверки новых оценок."
         logging.info("Start poiling marks")
         while True:
@@ -41,7 +38,7 @@ class MarkNotification(ABC):
             worker = MarkNotificationWorker(user)
             await worker.check_marks_and_add_to_db()
         except Exception as e:
-            logging.warning(f"MarkNotificationWorker exception: {e}")
+            logging.warning(f"MarkNotificationWorker add_user exception: {e}")
             raise
 
     async def check_new_marks(self):

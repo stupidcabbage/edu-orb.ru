@@ -1,9 +1,8 @@
 from logging.config import fileConfig
+from pathlib import Path
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
-
-from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 PATH_TO_DB = f"{BASE_DIR.parent}/db.sqlite3"

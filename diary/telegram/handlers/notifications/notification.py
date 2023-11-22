@@ -1,14 +1,15 @@
-from aiogram import Router, F, types
+from aiogram import F, Router, types
+
+from diary.api.notification import MarkNotification
+from diary.config import db_session
 from diary.db.models.users import User
 from diary.db.services.marks import get_five_last_marks
 from diary.db.services.users import get_user, set_notification_status
-from diary.templates import render_template
-from diary.telegram.keyboards import BACK_TO_START_KEYBOARD, NOTIFICATION_MENU_KEYBOARD
-
+from diary.telegram.keyboards import (BACK_TO_START_KEYBOARD,
+                                      NOTIFICATION_MENU_KEYBOARD)
 from diary.telegram.middlewares import (AuthorizeMiddleware,
                                         IsAuthorizedMiddleware)
-from diary.config import db_session
-from diary.api.notification import MarkNotification
+from diary.templates import render_template
 
 router = Router()
 router.message.middleware(AuthorizeMiddleware())

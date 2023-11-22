@@ -1,5 +1,7 @@
 import os
+from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any, Optional
 
 from aiogram import Bot
 from aiogram.enums import ParseMode
@@ -12,15 +14,62 @@ from diary.db.sessions import DBsession
 
 load_dotenv()
 
+
+class MetaSingleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(MetaSingleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class EnvToken(ABC):
+    @abstractmethod
+    def token(self) -> str:
+        pass
+    
+    def get_token_from_env(self, key: str, default = None) -> Any:
+        return os.getenv(key, default)
+
+    def raise_exception_if_token_does_not_exists(self,
+                                                 token: Optional[str]) -> Optional[TypeError]:
+        if not token:
+            raise self.ObligatoryTokenDoesNotExists
+
+    class ObligatoryTokenDoesNotExists(Exception):
+        def __str__(self):
+            return "Obligatory token does not exists! Check env file."
+
+
+class TelegramToken(EnvToken):
+    def token(self) -> str:
+        token = self.get_token_from_env("BOT_TOKEN")
+        self.raise_exception_if_token_does_not_exists(token)
+        return token
+
+
+class SentryDSNToken(EnvToken):
+    def token(self) -> str:
+        token = self.get_token_from_env("SENTRY_DSN")
+        self.raise_exception_if_token_does_not_exists(token)
+        return token
+
+
+class AiogramBot(Bot, metaclass=MetaSingleton):
+    def __init__(self, *args, **kwargs):
+        self.env_token = TelegramToken().token()
+        self.parse_mode = ParseMode.HTML
+        super().__init__(self.env_token, parse_mode=self.parse_mode, *args, **kwargs)
+
+
+class TelebotBot(TeleBot, metaclass=MetaSingleton):
+    def __init__(self, *args, **kwargs):
+        self.env_token = TelegramToken().token()
+        self.parse_mode = "HTML"
+        super().__init__(self.env_token, parse_mode=self.parse_mode, *args, **kwargs)
+
+
 BASE_DIR = Path(__file__).resolve().parent
-
-GOSUSLUGI_LOGIN = os.getenv("login")
-GOSUSLUGI_PASSWORD = os.getenv("password")
-TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
-SENTRY_DSN = os.getenv("DSN")
-
-bot = Bot(TELEGRAM_BOT_TOKEN, parse_mode=ParseMode.HTML)
-second_bot = TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="html")
 
 CURRENT_USER = 0
 

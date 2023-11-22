@@ -14,8 +14,8 @@ from telebot.types import ReplyKeyboardRemove as TReplyKeyboardRemove
 
 from diary.api.parcipiants import get_parcipiants
 from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
-                          PHONE_NUMBER_REGEX, SNILS_REGEX, db_session,
-                          second_bot)
+                          PHONE_NUMBER_REGEX, SNILS_REGEX, TelebotBot)
+from diary.config import db_session
 from diary.db.models import AuthorizeUser
 from diary.db.models.users import User
 from diary.db.services.users import add_user, get_user
@@ -92,7 +92,7 @@ async def restart_authorize(user: AuthorizeUser,
                             state: FSMContext,
                             error: str):
     "Прекращение авторизации при некорректных появлении ошибок."
-    second_bot.send_message(
+    TelebotBot().send_message(
             user.telegram_id,
             await render_template("incorrect_authorization.j2",
                                   {"error": error}),
@@ -154,7 +154,7 @@ async def authorize_gosuslugi(driver: SearchHelper,
             phpsessid = driver.get_phpsessid().get("value")
             driver.driver.quit()
             db_user = await create_user(user, phpsessid, state)
-            second_bot.send_message(user.telegram_id,
+            TelebotBot().send_message(user.telegram_id,
                             await render_template("success_authorize.j2",
                                                  {"user": db_user.parcipiants_id[0].name}),
                             reply_markup=TReplyKeyboardRemove())
@@ -208,7 +208,7 @@ async def authorize_gosuslugi(driver: SearchHelper,
     phpsessid = driver.get_phpsessid().get("value")
     driver.driver.quit()
     db_user = await create_user(user, phpsessid, state)
-    second_bot.send_message(user.telegram_id,
+    TelebotBot().send_message(user.telegram_id,
                             await render_template("success_authorize.j2",
                                                  {"user": db_user.parcipiants_id[0].name}),
                             reply_markup=TReplyKeyboardRemove())
@@ -262,7 +262,7 @@ async def oauth2(message: types.Message,
                  state: FSMContext):
     "Код двухфакторной аутентификации."
     if not _is_correct_oauth2(message):
-        second_bot.send_message(
+        TelebotBot().send_message(
                 message.chat.id,
                 await render_template("incorrect_data.j2", {"field": "код двухфакторной аутентификации"}))
         return
@@ -275,7 +275,7 @@ async def anomaly(message: types.Message,
                   state: FSMContext):
     "Аномалии."
     if not _is_correct_anomaly(message):
-        second_bot.send_message(
+        TelebotBot().send_message(
                 message.chat.id,
                 await render_template("incorrect_data.j2", {"field": "код"}))
         return
@@ -375,13 +375,13 @@ async def _get_anomaly_code_and_send_message(
     :param state FSMContext
     :param anomaly str | None: обнаруженная аномалия. Если None - значит фото аномалия.
     """
-    second_bot.send_message(
+    TelebotBot().send_message(
             user.telegram_id,
             await render_template("captcha.j2"))
 
     path_to_file = f"{BASE_DIR}/temp/{user.telegram_id}.png"
     with open(path_to_file, "rb") as f:
-        second_bot.send_photo(
+        TelebotBot().send_photo(
                 chat_id=user.telegram_id,
                 photo=f)
 
@@ -399,7 +399,7 @@ async def _get_oauth2_code_and_send_message(
     :param user AuthorizeUser: пользователь, проходящий регистрацию.
     :param state FSMContext
     """
-    second_bot.send_message(
+    TelebotBot().send_message(
             user.telegram_id,
             text=await render_template("oauth2.j2"))
     await state.set_state(SignUp.oauth2)

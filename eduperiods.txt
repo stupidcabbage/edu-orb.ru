@@ -54,3 +54,6 @@
         }]);
 
 return getExportItem("Итоговые отметки", base_url + "index/report/period/" + DataControl.getGuid() + "?format=")
+
+
+https://de.edu.orb.ru/schedule/index/schedule/grade/A609522E7C3BA26FB9657B03792B46B7/22.11.2023?single=1 # получение домашки на один день

@@ -9,6 +9,7 @@ from diary.db.models import User
 from diary.services.time import format_date, format_date_with_weekday
 
 
+
 async def get_diary_json(date: str, user: User) -> dict:
     """
     Возвращает расписание в виде json.
@@ -25,7 +26,7 @@ async def get_diary_json(date: str, user: User) -> dict:
 async def get_diary(user: User, date: datetime.datetime) -> Optional[Diary]:
     """
     Возвращает расписание.
-    :param date str: Дата начала в расписании (DD.MM.YYYY). Default=следующий день.
+    :param date str: Дата начала в расписании (DD.MM.YYYY). 
     :param user User: Пользователь, который делает запрос.
     """
     diary = await get_diary_json(format_date(date), user)

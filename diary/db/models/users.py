@@ -8,7 +8,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
-
 CURRENT_PARCIPIANT = 0
 
 
