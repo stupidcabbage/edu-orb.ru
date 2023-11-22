@@ -1,24 +1,51 @@
 import datetime
-from typing import NewType
-from pydantic import BaseModel
+from enum import Enum
+import logging
+from typing import Union
+import aiohttp
+from pydantic import BaseModel, ValidationError
 
 from diary.db.models import User
+from diary.services.time import format_date
 
 
-WeekDayWithDate = NewType("WeekDayWithDate", str)
+WeekDayWithDate = str
 
-
-class EduOrbDiary():
+class EduOrbCookies():
     def __init__(self, user: User):
         self.user = user
-        self.base_url = "https://de.edu.orb.ru"
+    
+    @property
+    async def cookies_with_phpsessid(self) -> dict:
+        return {"PHPSESSID": f"{self.user.phpsessid}"}
 
-    async def get_diary(self, date: datetime.datetime):
-        cookies = {"PHPSESSID": f"{self.user.phpsessid}"}
-        parcipiant_id = self.user.current_parcipiant.parcipiant_id
-        url = f"{self.base_url}/edv/index/diary/{parcipiant_id}?date={date}"
-        response = await get_json_response(url, cookies)
-        return response
+
+class EduOrbRequest():
+    DEFAULT_HEADERS = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0 (Edition Yx GX)"
+    }
+
+    def __init__(self, user: User,
+                 headers: dict = DEFAULT_HEADERS):
+        self.base_url = "https://de.edu.orb.ru"
+        self.user = user
+        self.cookies = EduOrbCookies(self.user)
+        self.headers = headers
+    
+    async def get_index_diary(self, date: datetime.datetime):
+        parcipiant_id = self.user.current_parcipiant().parcipiant_id
+        url = f"/edv/index/diary/{parcipiant_id}?date={format_date(date)}"
+        return await self.get_json(url)
+
+    async def get_json(self, url: str) -> dict:
+        cookies = await self.cookies.cookies_with_phpsessid
+        url = self.base_url + url
+
+        async with aiohttp.ClientSession(
+                cookies=cookies, headers=self.headers) as session:
+            async with session.get(url) as response:
+                return await response.json()
+
 
 class Lesson(BaseModel):
     pass
@@ -33,7 +60,47 @@ class DiaryResponseData(BaseModel):
     edu_periods: list[SchoolPeriod] | list[None]
 
 
-class EduOrbResponse(BaseModel):
+class BaseEduOrbResponse(BaseModel):
     success: bool
     message: str
+
+class EduOrbFailResponse(BaseEduOrbResponse):
+    pass
+
+class EduOrbSuccessResponse(BaseEduOrbResponse):
     data: DiaryResponseData
+
+
+class EduOrbDiary(EduOrbRequest):
+    def __init__(self, user: User):
+        self.user = user
+        super().__init__(self.user)
+
+    async def get_diary(self, date: datetime.datetime):
+        data = await self.get_diary_data(date)
+        if not data.success:
+            return ()
+        return data.data.diary
+
+    async def get_diary_data(self, date: datetime.datetime) -> Union[EduOrbFailResponse, EduOrbSuccessResponse]:
+        response = await self.get_index_diary(date) 
+        return self.validate_diary_response(response)
+
+    def validate_diary_response(self, response):
+        try:
+            return self.validate_success_response(response)
+        except Exception as error:
+            logging.error(f"Unknown response error: {error}")
+            raise 
+        
+    def validate_success_response(self, response):
+        try:
+            return EduOrbSuccessResponse.model_validate(response)
+        except ValidationError:
+            return self.validate_fail_response(response)
+
+    def validate_fail_response(self, response):
+        try:
+            return EduOrbFailResponse.model_validate(response)
+        except Exception:
+            raise

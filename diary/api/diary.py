@@ -36,6 +36,7 @@ async def get_diary(user: User, date: datetime.datetime) -> Optional[Diary]:
         logging.warning(f"Не удалось получить дневник: {e}")
         return None
 
+
 async def get_study_diary(user: User,
                           date: datetime.datetime) -> Optional[dict[str, list[Lesson]]]:
     diary = await get_diary(user, date)
