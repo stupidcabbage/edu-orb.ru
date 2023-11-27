@@ -9,7 +9,6 @@ from diary.db.models import User
 from diary.services.time import format_date, format_date_with_weekday
 
 
-
 async def get_diary_json(date: str, user: User) -> dict:
     """
     Возвращает расписание в виде json.

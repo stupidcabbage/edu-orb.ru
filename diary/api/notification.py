@@ -30,16 +30,7 @@ class MarkNotification(ABC):
         while True:
             self.users = get_user_for_notification(self.session)
             await self.check_new_marks()
-            time.sleep(300)
-    
-    async def add_user(self, user: User):
-        "Добавляет нового пользователя в список уведомлений"
-        try:
-            worker = MarkNotificationWorker(user)
-            await worker.check_marks_and_add_to_db()
-        except Exception as e:
-            logging.warning(f"MarkNotificationWorker add_user exception: {e}")
-            raise
+            time.sleep(10)
 
     async def check_new_marks(self):
         """
@@ -52,6 +43,15 @@ class MarkNotification(ABC):
                 await worker.check_marks_and_notify()
             except Exception as e:
                 logging.warning(f"MarkNotificationWorker exception: {e}")
+
+    async def add_user(self, user: User):
+        "Добавляет нового пользователя в список уведомлений"
+        try:
+            worker = MarkNotificationWorker(user)
+            await worker.check_marks_and_add_to_db()
+        except Exception as e:
+            logging.warning(f"MarkNotificationWorker add_user exception: {e}")
+            raise
 
 
 class MarkNotificationWorker(MarkNotification):

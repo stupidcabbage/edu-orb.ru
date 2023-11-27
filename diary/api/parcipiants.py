@@ -6,7 +6,6 @@ from diary.api.response import get_text_response
 from diary.db.models.users import ParcipiantsID, User
 
 
-
 async def get_index_parcipiant(user: User) -> str:
     cookies = {"PHPSESSID": f"{user.phpsessid}"}
     url = "https://de.edu.orb.ru/edv/index/participant"

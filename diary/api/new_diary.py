@@ -1,13 +1,13 @@
 import datetime
-from enum import Enum
 import logging
-from typing import Union
+from dataclasses import dataclass
+from typing import NamedTuple, Union
+
 import aiohttp
 from pydantic import BaseModel, ValidationError
 
 from diary.db.models import User
 from diary.services.time import format_date
-
 
 WeekDayWithDate = str
 
@@ -16,9 +16,8 @@ class EduOrbCookies():
         self.user = user
     
     @property
-    async def cookies_with_phpsessid(self) -> dict:
+    async def with_phpsessid(self) -> dict:
         return {"PHPSESSID": f"{self.user.phpsessid}"}
-
 
 class EduOrbRequest():
     DEFAULT_HEADERS = {
@@ -31,20 +30,27 @@ class EduOrbRequest():
         self.user = user
         self.cookies = EduOrbCookies(self.user)
         self.headers = headers
+        
+    async def get_diary_object(self):
+        pass
     
-    async def get_index_diary(self, date: datetime.datetime):
-        parcipiant_id = self.user.current_parcipiant().parcipiant_id
-        url = f"/edv/index/diary/{parcipiant_id}?date={format_date(date)}"
+    async def get_index_diary(self, date: datetime.datetime) -> dict:
+        url = await self.make_index_diary_url(date)
         return await self.get_json(url)
 
     async def get_json(self, url: str) -> dict:
-        cookies = await self.cookies.cookies_with_phpsessid
+        cookies = await self.cookies.with_phpsessid
         url = self.base_url + url
 
         async with aiohttp.ClientSession(
                 cookies=cookies, headers=self.headers) as session:
             async with session.get(url) as response:
                 return await response.json()
+
+    async def make_index_diary_url(self, date: datetime.datetime) -> str:
+        parcipiant_id = self.user.current_parcipiant().parcipiant_id
+        return f"/edv/index/diary/{parcipiant_id}?date={format_date(date)}"
+
 
 
 class Lesson(BaseModel):
@@ -70,9 +76,8 @@ class EduOrbFailResponse(BaseEduOrbResponse):
 class EduOrbSuccessResponse(BaseEduOrbResponse):
     data: DiaryResponseData
 
-
-class EduOrbDiary(EduOrbRequest):
-    def __init__(self, user: User):
+class EduOrbObject():
+    def __init__(self, user: User, data):
         self.user = user
         super().__init__(self.user)
 
@@ -104,3 +109,27 @@ class EduOrbDiary(EduOrbRequest):
             return EduOrbFailResponse.model_validate(response)
         except Exception:
             raise
+
+
+@dataclass
+class Parcipiant:
+    parcipiant_id: str
+    cookies: dict
+
+
+class Period(NamedTuple):
+    date_begin: datetime.datetime
+    date_end: datetime.datetime
+
+
+class DeEduOrb:
+    Diary = dict[WeekDayWithDate, list[Lesson]]
+    def get_diary(self, 
+                  parcipiant: Parcipiant,
+                  date: datetime.datetime) -> Diary:
+        print(parcipiant, date)
+
+    def get_marks(self,
+                  parcipiant: Parcipiant,
+                  period: Period):
+        print(parcipiant, period)
