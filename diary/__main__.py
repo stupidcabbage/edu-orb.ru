@@ -8,7 +8,7 @@ import sentry_sdk
 from aiogram import Dispatcher
 from sentry_sdk.integrations.logging import LoggingIntegration
 
-from diary.api.notification import MarkNotification
+from diary.old_api.notification import MarkNotification
 from diary.config import AiogramBot, SentryDSNToken
 from diary.telegram.handlers import (authorize, cancel, diary, help, marks,
                                      schedule, start, test, user)
@@ -22,6 +22,7 @@ dp = Dispatcher()
 
 
 #TODO: переписать логирование в отдельный файл.
+#TODO: разделить по классам и функциям.
 def set_logging():
     "Устанавливает логирование в программе."
     logging.basicConfig(
@@ -31,17 +32,17 @@ def set_logging():
                 logging.FileHandler("debug.log"),
                 logging.StreamHandler(sys.stdout)
                 ])
-    sentry_sdk.init(
-        dsn=SentryDSNToken().token(),
-        traces_sample_rate=1.0,
-        profiles_sample_rate=1.0,
-        integrations=[
-            LoggingIntegration(
-                level=logging.INFO,
-                event_level=logging.WARNING
-                )
-            ]
-    )
+    # sentry_sdk.init(
+        # dsn=SentryDSNToken().token(),
+        # traces_sample_rate=1.0,
+        # profiles_sample_rate=1.0,
+        # integrations=[
+            # LoggingIntegration(
+                # level=logging.INFO,
+                # event_level=logging.WARNING
+                # )
+            # ]
+    # )
 
 def start_notification_poiling():
     worker = MarkNotification()
@@ -56,6 +57,6 @@ async def main() -> NoReturn:
 
 if __name__ == "__main__":
     set_logging()
-    process = multiprocessing.Process(target=start_notification_poiling)
-    process.start()
+    # process = multiprocessing.Process(target=start_notification_poiling)
+    # process.start()
     asyncio.run(main())

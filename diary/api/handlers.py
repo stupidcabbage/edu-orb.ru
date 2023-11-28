@@ -1,6 +1,6 @@
 from telebot import logging
 
-from diary.api_new.exceptions import ParcipiantNotFound
+from diary.api.exceptions import ParcipiantNotFound
 from diary.db.models.users import User
 from diary.telegram.handlers.notifications.send_notification import \
     send_token_expired_notification

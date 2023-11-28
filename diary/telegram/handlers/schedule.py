@@ -3,8 +3,8 @@ import datetime
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
+from diary.api.deeduorb import DeEduOrb
 
-from diary.api.diary import get_lessons
 from diary.config import db_session
 from diary.db.models import User
 from diary.db.services.users import get_user
@@ -56,7 +56,7 @@ async def pagination_lesson(callback: CallbackQuery,
                             callback_data: ScheduleCallbackFactory):
     user: User = get_user(db_session, callback.message.chat.id)
     date = parse_date(callback_data.date)
-    diary = await get_lessons(user, date)
+    diary = await DeEduOrb().get_day_diary(user=user, date=date)
     if not diary:
         await send_no_lessons(callback.message, date, ScheduleCallbackFactory, True)
         await callback.answer()

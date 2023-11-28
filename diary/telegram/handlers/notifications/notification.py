@@ -1,6 +1,6 @@
 from aiogram import F, Router, types
 
-from diary.api.notification import MarkNotification
+from diary.old_api.notification import MarkNotification
 from diary.config import db_session
 from diary.db.models.users import User
 from diary.db.services.marks import get_five_last_marks

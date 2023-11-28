@@ -2,7 +2,7 @@ import datetime
 
 import aiohttp
 
-from diary.api_new.validators import EduOrbDiaryObject
+from diary.api.validators import EduOrbDiaryObject
 from diary.db.models import User
 from diary.services.time import format_date
 
@@ -11,8 +11,7 @@ class EduOrbCookies():
     def __init__(self, user: User):
         self.user = user
     
-    @property
-    async def with_phpsessid(self) -> dict:
+    async def get_with_phpsessid(self) -> dict:
         return {"PHPSESSID": f"{self.user.phpsessid}"}
 
 class EduOrbRequest():
@@ -32,13 +31,13 @@ class EduOrbRequest():
         return await EduOrbDiaryObject(self.user, date, data).get_diary_object()
 
     async def get_json_index_diary(self, date: datetime.datetime) -> dict:
-        "Возвращает JSON с данными дневника"
+        "Возвращает JSON с данными от API дневника"
         url = await self.make_index_diary_url(date)
         return await self.get_json(url)
 
     async def get_json(self, url: str) -> dict:
-        cookies = await self.cookies.with_phpsessid
-        url = self.base_url + url
+        cookies = await self.cookies.get_with_phpsessid()
+        url = self.constitute_full_url(url)
 
         async with aiohttp.ClientSession(
                 cookies=cookies, headers=self.headers) as session:
@@ -46,5 +45,8 @@ class EduOrbRequest():
                 return await response.json()
 
     async def make_index_diary_url(self, date: datetime.datetime) -> str:
-        parcipiant_id = self.user.current_parcipiant().parcipiant_id
+        parcipiant_id = self.user.current_parcipiant().parcipiant_id # TODO: Закон дементры.
         return f"/edv/index/diary/{parcipiant_id}?date={format_date(date)}"
+
+    def constitute_full_url(self, url: str) -> str:
+        return self.base_url + url

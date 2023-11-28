@@ -55,12 +55,14 @@ class SentryDSNToken(EnvToken):
         return token
 
 
-class AiogramBot(Bot, metaclass=MetaSingleton):
+class AiogramBot(Bot):
     def __init__(self, *args, **kwargs):
         self.env_token = TelegramToken().token()
         self.parse_mode = ParseMode.HTML
         super().__init__(self.env_token, parse_mode=self.parse_mode, *args, **kwargs)
 
+class AiogramBotSender(AiogramBot, metaclass=MetaSingleton):
+    pass
 
 class TelebotBot(TeleBot, metaclass=MetaSingleton):
     def __init__(self, *args, **kwargs):

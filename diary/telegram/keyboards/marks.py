@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from diary.api.classes import SchoolPeriod
+from diary.old_api.classes import SchoolPeriod
 
 
 class SchoolPeriodCallbackFactory(CallbackData, prefix="period"):

@@ -4,9 +4,9 @@ from abc import ABC
 from datetime import datetime
 from typing import NoReturn, Optional
 
-from diary.api.classes import Lesson
-from diary.api.diary import get_study_diary
-from diary.api.marks import SubjectMarks, get_marks
+from diary.old_api.classes import Lesson
+from diary.old_api.diary import get_study_diary
+from diary.old_api.marks import SubjectMarks, get_marks
 from diary.config import db_session
 from diary.db.models import User
 from diary.db.models.users import Mark

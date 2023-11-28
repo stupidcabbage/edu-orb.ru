@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from bs4 import BeautifulSoup
 
-from diary.api.response import get_text_response
+from diary.old_api.response import get_text_response
 from diary.db.models.users import ParcipiantsID, User
 
 

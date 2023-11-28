@@ -1,7 +1,7 @@
 import datetime
 
-from diary.api.classes import SchoolPeriod
-from diary.api.diary import get_diary
+from diary.old_api.classes import SchoolPeriod
+from diary.old_api.diary import get_diary
 from diary.db.models import User
 
 

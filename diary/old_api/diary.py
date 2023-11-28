@@ -2,8 +2,8 @@ import datetime
 import logging
 from typing import Optional
 
-from diary.api.classes import Diary, Lesson
-from diary.api.response import get_json_response
+from diary.old_api.classes import Diary, Lesson
+from diary.old_api.response import get_json_response
 from diary.config import CURRENT_USER
 from diary.db.models import User
 from diary.services.time import format_date, format_date_with_weekday

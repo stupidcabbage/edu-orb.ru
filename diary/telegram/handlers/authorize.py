@@ -12,7 +12,7 @@ from aiogram.fsm.context import FSMContext
 from emoji import EMOJI_DATA
 from telebot.types import ReplyKeyboardRemove as TReplyKeyboardRemove
 
-from diary.api.parcipiants import get_parcipiants
+from diary.old_api.parcipiants import get_parcipiants
 from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
                           PHONE_NUMBER_REGEX, SNILS_REGEX, TelebotBot,
                           db_session)

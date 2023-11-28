@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 from diary.api.exceptions import ParcipiantNotFound, TableDoesntExists
-from diary.api.response import get_text_response
+from diary.old_api.response import get_text_response
 from diary.config import CURRENT_USER
 from diary.db.models import User
 from diary.services.time import format_date

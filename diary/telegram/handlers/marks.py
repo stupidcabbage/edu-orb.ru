@@ -1,8 +1,8 @@
 from aiogram import F, Router, types
 from aiogram.filters import Command
 
-from diary.api.marks import get_marks as gm
-from diary.api.schoolperiods import get_school_periods
+from diary.old_api.marks import get_marks as gm
+from diary.old_api.schoolperiods import get_school_periods
 from diary.config import db_session
 from diary.db.services.users import get_user
 from diary.services.time import parse_date

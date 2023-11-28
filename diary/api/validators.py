@@ -1,12 +1,13 @@
 import datetime
 import logging
 from enum import Enum
-from typing import NoReturn, Union
+from typing import NoReturn, Optional, Union
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field, ValidationError, field_serializer, field_validator
 
-from diary.api_new.exceptions import ParcipiantNotFound, UnknownServerResponse
+from diary.api.exceptions import ParcipiantNotFound, UnknownServerResponse
 from diary.db.models import User
+from diary.services.time import parse_date
 
 WeekdayWithDate = str
 
@@ -21,9 +22,9 @@ class EduOrbDiaryObject():
         return await self.get_diary_from_response(response)
     
     async def get_diary_from_response(self, response: "DiaryDataResponse"):
-        if response.data:
-            return DiaryDataResponse.data.diary
-        return None
+        if self.is_lessons_exists(response):
+            return response.data.diary
+        return {}
     
     async def validate_diary(self):
         try:
@@ -45,14 +46,17 @@ class EduOrbDiaryObject():
                 logging.error(
                         f"Unknow server response. User: {self.user}. Error: {error}")
                 raise UnknownServerResponse
-
+    
     class EduOrbBadResponse(Enum):
         ParcipiantNotFound = "Ученик не найден"
+
+    def is_lessons_exists(self, response: "DiaryDataResponse"):
+        return (isinstance(response.data, DiaryData) and
+                isinstance(response.data.diary, dict))
     
 class BaseEduOrbResponse(BaseModel):
     success: bool
     message: str
-
 
 class DiaryData(BaseModel):
     diary: Union[dict[WeekdayWithDate, list["Lesson"]], list[None]]
@@ -70,13 +74,21 @@ class PreviosHomewok(BaseModel):
 
 
 class Lesson(BaseModel):
+    """
+    Attributes:
+        date The lesson date
+    """
     subject: str
     teacher: str
-    date: str
-    marksRaw: list[int]
-    absenceRaw: list[str]
-    lessonNumber: int
-    lessonTime: str
-    homework: str | None
-    previousHomework: PreviosHomewok | None
-    topic: str | None
+    date: datetime.datetime
+    grades: list[int] = Field(alias="marksRaw")
+    absences: list[str] = Field(alias="absenceRaw")
+    lesson_number: int = Field(alias="lessonNumber")
+    lesson_time: str = Field(alias="lessonTime")
+    homework: Optional[str]
+    previous_homework: Optional[PreviosHomewok] = Field("previousHomework")
+    topic: Optional[str]
+    
+    @field_validator("date", mode="before")
+    def validate_date(cls, date):
+        return parse_date(date)
