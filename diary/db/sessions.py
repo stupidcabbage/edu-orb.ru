@@ -30,13 +30,13 @@ class DBsession(object):
             self._session.flush([model])
 
     def rollback(self):
-        logging.info(f"Session rollback")
+        logging.info("Session rollback")
         self._session.rollback()
 
     def commit_session(self, need_close: bool = False):
         try:
             self._session.commit()
-            logging.info(f"Commit session")
+            logging.info("Commit session")
         except Exception as e:
             self.rollback()
             logging.critical(f"{__name__} {e}")
@@ -50,7 +50,7 @@ class DBsession(object):
 
     def close_session(self):
         try:
-            logging.info(f"Close session")
+            logging.info("Close session")
             self._session.close()
         except IntegrityError as e:
             logging.critical(f"{__name__} {e}")

@@ -22,7 +22,6 @@ router.message.middleware(AuthorizeMiddleware())
 router.message.middleware(IsAuthorizedAndHasCurrentUser())
 
 
-
 @router.message(Command("diary"))
 async def command_diary(message: Message,
                         command: CommandObject) -> None:
@@ -63,6 +62,5 @@ async def pagination_lesson(callback: CallbackQuery,
         await send_no_lessons(callback.message, date, DiaryCallbackFactory, True)
         await callback.answer()
         return
-
     await send_diary(callback.message, diary, date, DiaryCallbackFactory, True)
     await callback.answer()

@@ -11,7 +11,6 @@ from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from emoji import EMOJI_DATA
 from telebot.types import ReplyKeyboardRemove as TReplyKeyboardRemove
-
 from diary.old_api.parcipiants import get_parcipiants
 from diary.config import (BASE_DIR, EMAIL_REGEX, OAUTH2_REGEX,
                           PHONE_NUMBER_REGEX, SNILS_REGEX, TelebotBot,
@@ -346,7 +345,7 @@ def _message_is_text(message: types.Message) -> bool:
     Проверяет, что сообщение состоит только из символов:
     латинского алфавита / кириллицы / знаки препинания.
     """
-    if not message.content_type is types.ContentType.TEXT:
+    if message.content_type is not types.ContentType.TEXT:
         return False
     
     if message.text in EMOJI_DATA:

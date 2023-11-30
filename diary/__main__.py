@@ -1,15 +1,12 @@
 import asyncio
 import logging
-import multiprocessing
 import sys
 from typing import NoReturn
 
-import sentry_sdk
 from aiogram import Dispatcher
-from sentry_sdk.integrations.logging import LoggingIntegration
 
 from diary.old_api.notification import MarkNotification
-from diary.config import AiogramBot, SentryDSNToken
+from diary.config import AiogramBot
 from diary.telegram.handlers import (authorize, cancel, diary, help, marks,
                                      schedule, start, test, user)
 from diary.telegram.handlers.notifications import notification

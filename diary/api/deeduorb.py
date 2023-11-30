@@ -10,7 +10,7 @@ WeekDayWithDate = str
 Diary = dict[WeekDayWithDate, list["Lesson"]]
 
 
-class DeEduOrb():
+class DeEduOrb:
     def __init__(self, user: User) -> None:
         self.user = user
 
