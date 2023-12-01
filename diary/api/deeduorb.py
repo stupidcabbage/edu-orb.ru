@@ -3,6 +3,7 @@ from typing import NamedTuple
 
 from diary.api.handlers import exception_token_handler
 from diary.api.request import EduOrbRequest
+from diary.api.validators import DiaryEduOrbValidator
 from diary.db.models.users import User
 from diary.services.time import format_date_with_weekday
 
@@ -18,8 +19,10 @@ class DeEduOrb:
         diary = await self.get_diary(date=date)
         return self.get_weekday_from_diary(diary=diary, date=date)
 
-    async def get_diary(self, *, date: datetime.datetime) -> Diary:
-        return await EduOrbRequest(self.user).get_diary_object(date)
+    async def get_diary(self, *, date: datetime.datetime):
+        response = await EduOrbRequest(self.user).get_json_index_diary(date)
+        diary = await DiaryEduOrbValidator(response).get_diary_object()
+        return diary
 
     @exception_token_handler
     async def get_marks(self, *, user: User, period: "Period"):

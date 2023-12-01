@@ -84,7 +84,6 @@ class SubjectMarks:
         else:
             super().__setattr__(key, value)
 
-#TODO: перевести на datetime
 async def get_marks(date_begin: datetime, date_end: datetime, user: User) -> list[SubjectMarks]:
     """
     Возвращает оценки ввиде списка, состоящего из объектов вида SubjectMarks.
