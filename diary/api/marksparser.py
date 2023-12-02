@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from bs4 import BeautifulSoup, Tag
@@ -8,9 +8,9 @@ from diary.api.exceptions import ParcipiantNotFound, TableDoesntExists
 
 @dataclass
 class SubjectMarks:
-    "Класс оценок по определенному предмету,"
+    "Выписка по определенному предмету,"
     name: Optional[str] = None
-    marks: Optional[list[int]] = None
+    grades: list[int] = field(default_factory=list)
     middle_marks: float = 0.0
     noshow: int = 0
     passes: int = 0
@@ -35,7 +35,7 @@ class SubjectMarks:
         return value and value != "нет"
 
     def __setattr__(self, key, value):
-        if key == "marks":
+        if key == "grades":
             self.__dict__[key] = self._to_list(value)
         elif key in ("noshow", "passes", "illes"):
             self.__dict__[key] = self._to_int(value)
@@ -53,13 +53,14 @@ class MarksParser:
     "Значение, с которого начинают идти оценки."
     COLUMNS = {
         "column1": "name",
-        "column2": "marks",
+        "column2": "grades",
         "column3": "middle_marks",
         "column4": "noshow",
         "column5": "passes",
         "column6": "illes"
     }
     "Значение колонок и аттрибутов класса Subject"
+
 
     def __init__(self, html_data: str):
         self.html_data = html_data
@@ -86,17 +87,31 @@ class MarksParser:
             self.subjects.append(subject)
 
     async def make_subject(self, row: Tag) -> SubjectMarks:
-        "Возвращает объект класса SubjectMarks с полученных данных строки."
-        row = row.find_all(self.ROW_VALUES)
         subject = SubjectMarks()
-        for column in row:
-            attribute_name = column.get("class")[0]
-            subject_field = self.COLUMNS.get(attribute_name)
-            if not subject_field:
-                continue
-            setattr(subject, subject_field, column.text)
+
+        mark_rows = await self.find_all_row_marks(row)
+        for column in mark_rows:
+            self.set_values_to_subject_marks_if_field_exists(subject, column)
 
         return subject
+
+    async def find_all_row_marks(self, row: Tag) -> list[Tag]:
+        return row.find_all(self.ROW_VALUES)
+    
+    def set_values_to_subject_marks_if_field_exists(self,
+                                                    subject: SubjectMarks,
+                                                    column: Tag) -> None:
+        subject_field = self.get_subject_field_from_column(column)
+        if not subject_field:
+            return
+        setattr(subject, subject_field, column.text)
+
+    def get_subject_field_from_column(self, column: Tag):
+        attribute_name = self.get_attribute_name_from_column(column)
+        return self.COLUMNS.get(attribute_name)
+
+    def get_attribute_name_from_column(self, column: Tag):
+        return column.get("class")[0]
 
     async def find_marks_table(self):
         table = self.soup.find("table", id="sheet0")
@@ -104,8 +119,8 @@ class MarksParser:
         return table
 
     def check_table_for_validity(self, table):
-        if not table:
-            raise TableDoesntExists
-
         if self.soup.text == "Ученик не найден":
             raise ParcipiantNotFound
+
+        if not table:
+            raise TableDoesntExists

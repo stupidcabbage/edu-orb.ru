@@ -13,3 +13,9 @@ class ParcipiantNotFound(Exception):
 
 class UnknownServerResponse(Exception):
     pass
+
+class PeriodHasIncorrectParametersCount(Exception):
+    pass
+
+class PeriodIsNotDatetime(Exception):
+    pass

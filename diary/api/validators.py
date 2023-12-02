@@ -67,18 +67,20 @@ class DiaryDataResponse(BaseModel):
 
 
 class PreviosHomewok(BaseModel):
-    date: datetime.datetime
+    date: Optional[datetime.datetime]
     homework: str
 
     @field_validator("date", mode="before")
     def validate_date(cls, date):
-        return parse_date(date)
+        if date:
+            return parse_date(date)
+        return None
 
 
 class Lesson(BaseModel):
     subject: str
     teacher: str
-    date: datetime.datetime
+    date: Optional[datetime.datetime]
     grades: list[int] = Field(alias="marksRaw")
     absences: list[str] = Field(alias="absenceRaw")
     lesson_number: int = Field(alias="lessonNumber")
@@ -89,4 +91,6 @@ class Lesson(BaseModel):
     
     @field_validator("date", mode="before")
     def validate_date(cls, date):
-        return parse_date(date)
+        if date:
+            return parse_date(date)
+        return None

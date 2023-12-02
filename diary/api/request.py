@@ -2,17 +2,11 @@ import datetime
 from typing import NamedTuple
 
 import aiohttp
+from diary.api.exceptions import PeriodHasIncorrectParametersCount, PeriodIsNotDatetime
+from diary.api.parcipiant import EduOrbParcipiant
 
-from diary.db.models import User
 from diary.services.time import format_date
 
-
-class EduOrbCookies():
-    def __init__(self, user: User):
-        self.user = user # TODO: Убрать зависимость от юзера
-    
-    async def get_with_phpsessid(self) -> dict:
-        return {"PHPSESSID": f"{self.user.phpsessid}"}
 
 class Period(NamedTuple): # TODO: убрать класс
     date_begin: datetime.datetime
@@ -25,27 +19,24 @@ class BaseEduOrbRequest:
     }
     BASE_URL = "https://de.edu.orb.ru"
 
-    def __init__(self, user: User,
+    def __init__(self, parcipiant: EduOrbParcipiant,
                  headers: dict = DEFAULT_HEADERS):
-        self.user = user # TODO: Убрать зависимоость от юзера | Сделать parcipiant ID
-        self.cookies = EduOrbCookies(self.user)
+        self.parcipiant = parcipiant
+        self.cookies = parcipiant.get_cookies_with_phpsessid()
         self.headers = headers
 
     async def get_json(self, url: str) -> dict:
-        cookies = await self.cookies.get_with_phpsessid()
         url = self.constitute_full_url(url) # TODO: Функция должна получать уже полный URL. Или переделывать его в init
 
         async with aiohttp.ClientSession(
-                cookies=cookies, headers=self.headers) as session:
+                cookies=self.cookies, headers=self.headers) as session:
             async with session.get(url) as response:
                 return await response.json()
 
     async def get_text(self, url: str) -> str:
-        cookies = await self.cookies.get_with_phpsessid()
         url = self.constitute_full_url(url) # TODO: Функция должна получать уже полный URL. Или переделывать его в init
-        print(url)
         async with aiohttp.ClientSession(headers=self.headers, 
-                                         cookies=cookies) as s:
+                                         cookies=self.cookies) as s:
             async with s.get(url) as response:
                 return await response.text()
 
@@ -57,20 +48,37 @@ class BaseEduOrbRequest:
 class EduOrbRequest(BaseEduOrbRequest):
     async def get_json_index_diary(self, date: datetime.datetime) -> dict:
         "Возвращает JSON с данными от API дневника"
-        return await DiaryEduOrbRequest(user=self.user).get_index_diary(date)
+        return await DiaryEduOrbRequest(self.parcipiant).get_index_diary(date)
 
-    async def get_marks_table(self, period: Period):
-        return await MarksEduOrbRequest(user=self.user).get_html_marks_table(period)
+    async def get_marks_table(self, period: tuple[datetime.datetime,
+                                                  datetime.datetime]):
+        return await MarksEduOrbRequest(self.parcipiant).get_html_marks_table(period)
 
 
 class MarksEduOrbRequest(BaseEduOrbRequest):
-    async def get_html_marks_table(self, period: Period):
-        url = await self.make_html_mark_url(period)
+    async def get_html_marks_table(self, period: tuple[datetime.datetime,
+                                                       datetime.datetime]):
+        url = await self.make_html_mark_url(self.transform_to_period(period))
         return await self.get_text(url)
 
     async def make_html_mark_url(self, period: Period):
-        parcipiant_id = self.user.current_parcipiant().parcipiant_id # TODO: Закон дементры.
-        return f"/edv/index/report/marks/{parcipiant_id}?begin={format_date(period.date_begin)}&end={format_date(period.date_end)}&format=html"
+        return f"/edv/index/report/marks/{self.parcipiant.parcipiant_id}?begin={format_date(period.date_begin)}&end={format_date(period.date_end)}&format=html"
+
+    def transform_to_period(self, tuple_period: tuple):
+        if not len(tuple_period) == 2:
+            raise PeriodHasIncorrectParametersCount
+        
+        if not self.is_tuple_period_datetime(tuple_period):
+            raise PeriodIsNotDatetime
+
+        return Period(*tuple_period)
+
+    def is_tuple_period_datetime(self, tuple_period: tuple) -> bool:
+        for date in tuple_period:
+            if not isinstance(date, datetime.datetime):
+                return False
+        return True
+
 
 
 class DiaryEduOrbRequest(BaseEduOrbRequest):
@@ -79,5 +87,4 @@ class DiaryEduOrbRequest(BaseEduOrbRequest):
         return await self.get_json(url)
 
     async def make_index_diary_url(self, date: datetime.datetime) -> str:
-        parcipiant_id = self.user.current_parcipiant().parcipiant_id # TODO: Закон дементры.
-        return f"/edv/index/diary/{parcipiant_id}?date={format_date(date)}"
+        return f"/edv/index/diary/{self.parcipiant.parcipiant_id}?date={format_date(date)}"
