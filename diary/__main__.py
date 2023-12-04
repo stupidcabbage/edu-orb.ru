@@ -5,7 +5,7 @@ from typing import NoReturn
 
 from aiogram import Dispatcher
 
-from diary.old_api.notification import MarkNotification
+from diary.api.notification import MarkNotification
 from diary.config import AiogramBot
 from diary.telegram.handlers import (authorize, cancel, diary, help, marks,
                                      schedule, start, test, user)

@@ -119,7 +119,7 @@ class MarkNotificationWorker(MarkNotification):
         "Проверяет, что новые отметки существуют."
         diary = await get_study_diary(self.user, date)
         if not diary:
-            return
+            return # TODO: ???
 
         for lessons in diary.values():
             await self.append_new_marks_if_exists(lessons)

@@ -1,8 +1,8 @@
-Домашнее задание на {{ diary[0].date }} 📚<br><br>
+Домашнее задание на {{ diary[0].date.strftime('%d.%m.%Y') }} 📚<br><br>
 {% for lesson in diary %}
-{{ lesson.lessonNumber }}. {{ lesson.subject }}: 
-{% if lesson.previousHomework %}
-{{ lesson.previousHomework.homework }}
+{{ lesson.lesson_number }}. {{ lesson.subject }}: 
+{% if lesson.previous_homework.homework %}
+{{ lesson.previous_homework.homework }}
 {% else %}
 -
 {% endif %}<br>

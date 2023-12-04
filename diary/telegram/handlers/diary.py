@@ -51,7 +51,6 @@ async def callback_diary(callback: CallbackQuery):
                              True)
     await callback.answer()
 
-
 @router.callback_query(DiaryCallbackFactory.filter())
 async def pagination_lesson(callback: CallbackQuery,
                             callback_data: DiaryCallbackFactory):

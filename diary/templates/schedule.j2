@@ -1,25 +1,25 @@
-Расписание на {{ diary[0].date }} 📆<br><br>
+Расписание на {{ diary[0].date.strftime('%d.%m.%Y') }} 📆<br><br>
 {% for lesson in diary %}
-{{ lesson.lessonNumber }}. {{ lesson.subject }}
-{% if lesson.marksRaw[0] %}
+{{ lesson.lesson_number }}. {{ lesson.subject }}
+{% if lesson.grades|length > 0 %}
  | Оценка за урок: 
 
-{% for i in range(lesson.marksRaw|length) %}
-{% if i == lesson.marksRaw|length -1 %}
-{{ lesson.marksRaw[i] }} 
+{% for i in range(lesson.grades|length) %}
+{% if i == lesson.grades|length -1 %}
+{{ lesson.grades[i] }} 
 {% else %}
-{{ lesson.marksRaw[i] }}, 
+{{ lesson.grades[i] }}, 
 {% endif %}
 {% endfor %}
 
 {% endif %}
-{% if lesson.absenceRaw[0] %}
+{% if lesson.absences|length > 0 %}
  | <i>Посещение: 
-{% for i in range(lesson.absenceRaw|length) %}
-{% if i == lesson.absenceRaw|length -1 %}
-{{ lesson.absenceRaw[i] }} 
+{% for i in range(lesson.absences|length) %}
+{% if i == lesson.absences|length -1 %}
+{{ lesson.absences[i] }} 
 {% else %}
-{{ lesson.absenceRaw[i] }}, 
+{{ lesson.absences[i] }}, 
 {% endif %}
 {% endfor %}
  </i>
