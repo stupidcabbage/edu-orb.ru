@@ -41,5 +41,3 @@ async def start(message: Message, is_callback: bool = False):
                         message,
                         is_callback,
                         reply_markup=MENU_KEYBOARD())
-
-

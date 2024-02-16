@@ -7,11 +7,12 @@ from aiogram import Dispatcher
 
 from diary.api.notification import MarkNotification
 from diary.config import AiogramBot
-from diary.telegram.handlers import (authorize, cancel, diary, help, marks,
+from diary.telegram.handlers import (cancel, diary, help, marks,
                                      schedule, start, test, user)
+from diary.telegram.handlers.authorization import router as authorize_router
 from diary.telegram.handlers.notifications import notification
 
-HANDLERS = (diary.router, cancel.router, start.router, authorize.router,
+HANDLERS = (diary.router, cancel.router, start.router, authorize_router,
             user.router, marks.router, schedule.router, help.router,
             notification.router, test.router)
 
